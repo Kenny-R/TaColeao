@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <string.h>
+#include "listaEnlazada.h"
 
 /* Funcion temporal del hilo */ 
 void func(void *ptr)
@@ -20,17 +22,8 @@ void func(void *ptr)
 }
 
 
-int main(int argc, char *argv[])
-{
-    char * carga = malloc(MAX_NAME);
-    strcpy(carga,"carga.csv");
-    double t = 0.25;
-    comprobarEntrada(argc,argv,carga,&t);
-    
-    printf("nameC= %s\nt=%f\n",carga,t);
-    
-    free(carga);
-    
+int crearProcesos(int argc, char *argv[])
+{    
     
     /* Creacion de los procesos e hilos */
 
@@ -40,8 +33,8 @@ int main(int argc, char *argv[])
     /* PIPE */
     int fds[n][2];
     char buffer[20][30]; /* puse 30 para el largo del msj del pipe */
-
-    for (int i = 0; i < n; i++)
+    int i;
+    for (i = 0; i < n; i++)
         pipe(fds[i]);
 
     /* pid de los procesos (es decir, de las paradas de los autobuses) */
@@ -51,7 +44,7 @@ int main(int argc, char *argv[])
     pthread_t hilos[n][m];
 
     /* creacion de los n procesos */
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
     {
         terminal[i] = fork();
         if (terminal[i] == -1)
@@ -69,7 +62,8 @@ int main(int argc, char *argv[])
             int id[m];        /* ID de los hilos (autobuses) */
             
             /* creo los hilos */
-            for (int j = 0; j < m; j++)
+            int j;
+            for (j = 0; j < m; j++)
             {
                 id[j] = i * 10 + j;
                 pthread_create(&hilos[i][j], NULL, (void *)&func, (void *)&id[j]);
@@ -94,7 +88,7 @@ int main(int argc, char *argv[])
             {
                 while (1)
                 {
-                    for (int i = 0; i < n; i++)
+                    for (i = 0; i < n; i++)
                     {
                         read(fds[i][0], buffer[i], 7); /* reviso lo que escribieron cada proceso */
                         printf("El padre lee: %s \n", buffer[i]);
@@ -106,7 +100,7 @@ int main(int argc, char *argv[])
     }
 
     /* Finalizo los procesos hijos */
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
     {
         wait(NULL);
     }
@@ -115,4 +109,31 @@ int main(int argc, char *argv[])
     
     return 0;
 
+}
+
+
+int main(int argc, char *argv[])
+{
+    char *contedio1 = malloc(30);
+    char *contedio2 = malloc(30);
+    char *contedio3 = malloc(30);
+
+    strcpy(contedio1,"hola soy el contenido 3");
+    strcpy(contedio2,"hola soy el contenido 2");
+    strcpy(contedio3,"hola soy el contenido 1");
+
+    nodo *list = crearListaEnlazada();
+    anadirNodo(contedio1,list);
+    anadirNodo(contedio2,list);
+    anadirNodo(contedio3,list);
+    
+    nodo *actual = list->siguente;
+    while (actual->contenido != NULL) {
+        printf("%s\n",actual->contenido);
+        actual = actual->siguente;
+    }
+
+    eliminarLista(list);
+    
+    return 0;
 }
