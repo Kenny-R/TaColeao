@@ -1,4 +1,3 @@
-#include "utilidades.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -8,6 +7,8 @@
 #include <unistd.h>
 #include <string.h>
 #include "listaEnlazada.h"
+#include "utilidades.h"
+#include "carga.h"
 
 /* Funcion temporal del hilo */ 
 void func(void *ptr)
@@ -114,26 +115,36 @@ int crearProcesos(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    char *contedio1 = malloc(30);
-    char *contedio2 = malloc(30);
-    char *contedio3 = malloc(30);
-
-    strcpy(contedio1,"hola soy el contenido 3");
-    strcpy(contedio2,"hola soy el contenido 2");
-    strcpy(contedio3,"hola soy el contenido 1");
-
-    nodo *list = crearListaEnlazada();
-    anadirNodo(contedio1,list);
-    anadirNodo(contedio2,list);
-    anadirNodo(contedio3,list);
+    char * a;
+    time_t b;
+    t_carga nose = {};
     
-    nodo *actual = list->siguente;
+    a = malloc(30);
+    memset(a,0,30);
+    strcpy(a,"PABE");
+    nose.cod = a;
+    nose.grupos = crearListaEnlazada();
+    a = malloc(30);
+    memset(a,0,30);
+    strcpy(a,"BELLAS ARTES");
+    nose.name = a;
+    a = malloc(30);
+    memset(a,0,30);
+    strcpy(a,"0:10:0");
+    nose.recorr = strToTime(a);
+
+    agregarGrupo("6:0:0", 10, &nose);
+    agregarGrupo("7:0:0", 20, &nose);
+    agregarGrupo("8:0:0", 30, &nose);
+
+    nodo *actual = nose.grupos->siguiente;
+    t_grupo *contenido;
     while (actual->contenido != NULL) {
-        printf("%s\n",actual->contenido);
-        actual = actual->siguente;
+        contenido = (t_grupo *)(actual->contenido);
+        strftime(a,30,"%H:%M:%S",localtime(&(contenido->hora)));
+        printf("%s - %d\n",a,contenido->cantidad);
+        actual = actual -> siguiente;
     }
 
-    eliminarLista(list);
-    
     return 0;
 }

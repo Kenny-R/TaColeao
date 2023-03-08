@@ -73,3 +73,32 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
 
     return 0;
 };
+
+int verificarTiempo(horas,minutos,segundos) {
+    if (horas > 23 || horas < 0) 
+        return 0;
+    if (minutos > 59 || minutos < 0)
+        return 0;
+    if (segundos > 59 || segundos < 0)
+        return 0;
+    
+    return 1;
+    
+}
+
+time_t strToTime(char *str) {
+    int horas, minutos, segundos;
+    sscanf(str,"%d:%d:%d",&horas,&minutos,&segundos);
+    if (verificarTiempo(horas,minutos,segundos) == 0) {
+        printf("Error with the time");
+        return;
+    }
+    
+    struct tm d = {};
+    d.tm_hour = horas;
+    d.tm_min = minutos;
+    d.tm_sec = segundos;
+
+    return mktime(&d);
+}
+

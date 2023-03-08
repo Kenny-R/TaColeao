@@ -7,23 +7,36 @@ nodo * crearListaEnlazada(){
     nodo * head = malloc(sizeof(nodo));
 
     head -> anterior = head;
-    head -> siguente = head;
+    head -> siguiente = head;
     head -> contenido = NULL;
 
     return head;
 }
 
-void anadirNodo(void * contenido, nodo * listaEnlazada) {
+void anadirNodoAlFinal(void * contenido, nodo * listaEnlazada) {
 
     nodo * nuevoNodo = malloc(sizeof(nodo));
     /*seteamos el nuevo nodo*/
-    nuevoNodo -> siguente = listaEnlazada;
+    nuevoNodo -> siguiente = listaEnlazada;
     nuevoNodo -> anterior = listaEnlazada -> anterior;
     nuevoNodo -> contenido = contenido;
 
     /*actualizamos los apuntadores*/
-    listaEnlazada -> anterior -> siguente = nuevoNodo;
+    listaEnlazada -> anterior -> siguiente = nuevoNodo;
     listaEnlazada -> anterior = nuevoNodo;
+}
+
+void anadirNodoAlInicio(void * contenido, nodo * listaEnlazada) {
+
+    nodo * nuevoNodo = malloc(sizeof(nodo));
+    /*seteamos el nuevo nodo*/
+    nuevoNodo -> siguiente = listaEnlazada->siguiente;
+    nuevoNodo -> anterior = listaEnlazada;
+    nuevoNodo -> contenido = contenido;
+
+    /*actualizamos los apuntadores*/
+    listaEnlazada -> siguiente = nuevoNodo;
+    nuevoNodo-> siguiente -> anterior = nuevoNodo;
 }
 
 void eliminarLista(nodo * listaEnlazada) {
@@ -32,7 +45,7 @@ void eliminarLista(nodo * listaEnlazada) {
     nodo *actual = listaEnlazada ->anterior;
     while (actual->contenido != NULL) {
         actual = actual -> anterior;
-        free(actual->siguente);
+        free(actual->siguiente);
     } 
 
     /*si llegamos aqui es que estamos en la cabeza de la lista*/

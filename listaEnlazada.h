@@ -6,12 +6,14 @@
         
         void * contenido;
 
-        struct NODO * siguente;
+        struct NODO * siguiente;
     } nodo;
 
     nodo * crearListaEnlazada();
 
-    void anadirNodo(void * contenido, nodo * ListaEnlazada);
+    void anadirNodoAlFinal(void * contenido, nodo * listaEnlazada);
+
+    void anadirNodoAlInicio(void * contenido, nodo * listaEnlazada);
 
     void eliminarLista(nodo * listaEnlazada);
 #endif
