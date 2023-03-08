@@ -17,4 +17,10 @@
     } t_carga;
 
     void agregarGrupo(char *hora, int cantidad,t_carga *carga);
+
+    time_t reducirCarga(int *cantidad, t_carga *carga);
+
+    t_carga *crearCarga(char *cod, char *name, char *tiempoRecorr);
+
+    t_grupo *crearGrupo(char *hora, int cantidad);
 #endif

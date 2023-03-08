@@ -52,3 +52,9 @@ void eliminarLista(nodo * listaEnlazada) {
     free(listaEnlazada);
     
 }
+
+void eliminarNodo(nodo *nodo_a_eliminar){
+    nodo_a_eliminar->anterior->siguiente = nodo_a_eliminar->siguiente;
+    nodo_a_eliminar->siguiente->anterior = nodo_a_eliminar->anterior;
+    free(nodo_a_eliminar);
+}

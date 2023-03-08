@@ -1,7 +1,7 @@
 COMP = gcc -c
 LINK = gcc
 OBJDIR = etc
-OBJECTS = $(OBJDIR)/main.o $(OBJDIR)/utilidades.o $(OBJDIR)/listaEnlazada.o $(OBJDIR)/carga.o 
+OBJECTS = $(OBJDIR)/main.o $(OBJDIR)/utilidades.o $(OBJDIR)/listaEnlazada.o $(OBJDIR)/carga.o $(OBJDIR)/itinerario.o 
 
 PROGRAM = TaColeao.out
 
@@ -28,6 +28,9 @@ $(OBJDIR)/listaEnlazada.o: listaEnlazada.c $(OBJDIR) listaEnlazada.h
 
 $(OBJDIR)/carga.o: carga.c $(OBJDIR) listaEnlazada.h $(OBJDIR) carga.h $(OBJDIR) utilidades.h
 	$(COMP) carga.c -o $(OBJDIR)/carga.o -ansi
+
+$(OBJDIR)/itinerario.o: itinerario.c $(OBJDIR) listaEnlazada.h $(OBJDIR) itinerario.h $(OBJDIR) utilidades.h
+	$(COMP) itinerario.c -o $(OBJDIR)/itinerario.o -ansi
 
 $(OBJDIR):
 	mkdir $(OBJDIR)

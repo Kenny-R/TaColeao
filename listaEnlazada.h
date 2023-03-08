@@ -16,4 +16,6 @@
     void anadirNodoAlInicio(void * contenido, nodo * listaEnlazada);
 
     void eliminarLista(nodo * listaEnlazada);
+
+    void eliminarNodo(nodo *nodo_a_eliminar);
 #endif

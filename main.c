@@ -9,6 +9,7 @@
 #include "listaEnlazada.h"
 #include "utilidades.h"
 #include "carga.h"
+#include "itinerario.h"
 
 /* Funcion temporal del hilo */ 
 void func(void *ptr)
@@ -115,36 +116,39 @@ int crearProcesos(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    char * a;
-    time_t b;
-    t_carga nose = {};
-    
+    char *a;
+    servicio_autobus *nuevoServicio;
+    itinerario *itinerario;
     a = malloc(30);
-    memset(a,0,30);
     strcpy(a,"PABE");
-    nose.cod = a;
-    nose.grupos = crearListaEnlazada();
+    itinerario = crearItinerario(a);
     a = malloc(30);
-    memset(a,0,30);
-    strcpy(a,"BELLAS ARTES");
-    nose.name = a;
+    strcpy(a,"8:00:00");
+    agregarServicio(a,10,itinerario);
     a = malloc(30);
-    memset(a,0,30);
-    strcpy(a,"0:10:0");
-    nose.recorr = strToTime(a);
+    strcpy(a,"9:30:00");
+    agregarServicio(a,2,itinerario);
+    a = malloc(30);
+    strcpy(a,"11:15:00");
+    agregarServicio(a,15,itinerario);
 
-    agregarGrupo("6:0:0", 10, &nose);
-    agregarGrupo("7:0:0", 20, &nose);
-    agregarGrupo("8:0:0", 30, &nose);
+    printf("intinerario de la parada: %s\n",itinerario->cod);
+    servicio_autobus *tomado = tomarServicio(itinerario);
 
-    nodo *actual = nose.grupos->siguiente;
-    t_grupo *contenido;
-    while (actual->contenido != NULL) {
-        contenido = (t_grupo *)(actual->contenido);
-        strftime(a,30,"%H:%M:%S",localtime(&(contenido->hora)));
-        printf("%s - %d\n",a,contenido->cantidad);
-        actual = actual -> siguiente;
+    nodo *actual = itinerario->servicios->siguiente;
+    servicio_autobus *contenido = (servicio_autobus *)(actual->contenido);
+    
+    while (contenido != NULL)
+    {
+        strftime(a,30,"%H:%M,%S",localtime(&(contenido->hora)));
+        printf("%s - %d\n",a,contenido->capacidad);
+        actual = actual->siguiente;
+        contenido = (servicio_autobus *)(actual->contenido);
     }
+    
+    strftime(a,30,"%H:%M,%S",localtime(&(tomado->hora)));
+    printf("y tome el servicio: %s-%d\n",a,tomado->capacidad);
+
 
     return 0;
 }
