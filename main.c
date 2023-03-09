@@ -116,12 +116,34 @@ int crearProcesos(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    /* intento de leer los archivos xD */
-    /* Leemos el archivo de carga */
-    /* En proceso ... */
+    /* numero de rutas */
+    int n = 0;
+
+    /* primero, abrimos y Leemos el archivo de carga para obtener el numero de rutas */
+    char file_name[20];
+    strcpy(file_name, argv[4]);
+    FILE *load_file = fopen(file_name, "r");
+    /* Verifiquemos si se pudo abrir correctamente el archivo */
+    if (load_file == NULL)
+    {
+        printf("The file could not be open\n");
+        return 1;
+    }
+    n = get_number_routes(load_file);
+    
+    /* Creamos un arreglo para las cargas */
+    t_carga *loads[n];
+
+    /* Volvemos a leer desde el comienzo del archivo */
+    rewind(load_file);
+    /* Y construiremos el arreglo de las cargas */
+    build_loads(n, load_file, loads);
+    /* Cerramos el archivo de carga */
+    fclose(load_file);
+    
+    /* ya va xD */
     
     /* Leemos el archivo de servicio */
-    char nombre_archivo[20];
     strcpy(nombre_archivo, argv[2]);
     FILE *servicio_archivo = fopen(nombre_archivo, "r");
 
