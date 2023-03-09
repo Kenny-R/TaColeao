@@ -1,4 +1,5 @@
 #include "utilidades.h"
+#include "carga.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -98,3 +99,77 @@ time_t strToTime(char *str) {
     return mktime(&d);
 }
 
+/*
+ Funcion que cuenta el numero de rutas mediante un archivo
+ Argumentos:
+    *fp: un apuntador a un archivo
+Retorna:
+    n: numero de rutas
+ */
+int get_number_routes(FILE *fp)
+{
+    int n = 0;
+    /* El numero de lineas del archivo indica el numero de rutas restandole menos 1 por la primera fila del archivo */
+    char c = getc(fp);
+    while (c != EOF)
+    {
+        if (c == '\n')
+            n++;
+        c = getc(fp);
+    }
+    n--;
+
+    return n;
+}
+
+/*
+ Funcion que lee el archivo de carga y construye el arreglo donde se guarda estas cargas
+ Argumentos:
+    n: un entero que indica el numero de rutas
+    *fp: un apuntador a un archivo
+    arr: un arreglo de tipo t_carga
+ */
+void build_loads(int n, FILE *fp, t_carga *arr[])
+{
+    /* leemos la linea del archivo de carga sin realizar nada */
+    char c;
+    while (c != '\n')
+        c = getc(fp);
+
+    /* Comenzamos a leer las siguientes lineas del archivo */
+    t_carga *new_load;
+    char load_name[30], travel_time[6], code[4], minutes[3];
+    int g[8], h, m;
+    int i;
+    for (i = 0; i < n; ++i)
+    {
+        fscanf(fp, "%[^,], %[^,],%d:%d,%d,%d,%d,%d,%d,%d,%d,%d", code, load_name, &h, &m, &g[0], &g[1], &g[2], &g[3], &g[4], &g[5], &g[6], &g[7]);
+
+        /* tiempo de recorrido en string */
+        sprintf(travel_time, "%d", h);
+        strcat(travel_time, ":");
+        if (m < 10)
+            strcat(travel_time, "0");
+        sprintf(minutes, "%d", m);
+        strcat(travel_time, minutes);
+
+        /* Creamos la carga con los datos que nos dieron */
+        new_load = crearCarga(code, load_name, travel_time);
+
+        /* Agregamos los 8 grupos */
+        agregarGrupo("06:00", g[0], new_load);
+        agregarGrupo("07:00", g[1], new_load);
+        agregarGrupo("08:00", g[2], new_load);
+        agregarGrupo("09:00", g[3], new_load);
+        agregarGrupo("10:00", g[4], new_load);
+        agregarGrupo("11:00", g[5], new_load);
+        agregarGrupo("12:00", g[6], new_load);
+        agregarGrupo("13:00", g[7], new_load);
+
+        /* Agregamos esta nueva carga al arreglo */
+        arr[i] = new_load;
+
+        /* obtenemos el caracter de la nueva linea */
+        c = getc(fp);
+    }
+}
