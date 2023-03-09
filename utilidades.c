@@ -84,7 +84,7 @@ int verificarTiempo(int horas, int minutos) {
 }
 
 time_t strToTime(char *str) {
-    int horas, minutos, segundos;
+    int horas, minutos;
     sscanf(str,"%d:%d",&horas,&minutos);
     if (verificarTiempo(horas,minutos) == 0) {
         printf("Error with the time");
