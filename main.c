@@ -117,6 +117,9 @@ int crearProcesos(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     /* intento de leer los archivos xD */
+    /* Leemos el archivo de carga */
+    /* En proceso ... */
+    
     /* Leemos el archivo de servicio */
     char nombre_archivo[20];
     strcpy(nombre_archivo, argv[2]);
