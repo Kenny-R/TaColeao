@@ -1,5 +1,7 @@
 #ifndef UTILIDADES_LIB
     #include <time.h>
+    #include <stdio.h>
+    #include "carga.h"
     
     #define UTILIDADES_LIB
     #define MAX_NAME 20 /*El tamaño maximo de un nombre de archivo*/
