@@ -116,6 +116,77 @@ int crearProcesos(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+    /* intento de leer los archivos xD */
+    /* Leemos el archivo de servicio */
+    char nombre_archivo[20];
+    strcpy(nombre_archivo, argv[2]);
+    FILE *servicio_archivo = fopen(nombre_archivo, "r");
+
+    /* Verifiquemos si se pudo abrir correctamente el archivo */
+    if (servicio_archivo == NULL)
+    {
+        printf("Error no se pudo abrir el archivo\n");
+        return 1;
+    }
+
+    char c;
+    int numero_de_itinerarios = 0;
+    /* primero revisemos cuantas lineas hay en el archivo para saber el numero de itinerarios */
+    while (c != EOF)
+    {
+        if (c == '\n')
+            numero_de_itinerarios++;
+        c = getc(servicio_archivo);
+    }
+    numero_de_itinerarios++;
+
+    /* Creamos un arreglo para guardar las paradas */
+    itinerario *servicio_paradas[numero_de_itinerarios];
+
+    /* volvemos a leer el archivo desde el inicio */
+    rewind(servicio_archivo);
+
+    int carga, i = 0;
+    itinerario *nuevo_itinerario;
+    c = getc(servicio_archivo);
+    while (c != EOF)
+    {
+        if (isalpha(c))
+        {
+            /* Leemos el codigo de la parada */
+            char codigo[4] = "";
+            while (isalpha(c))
+            {
+                strncat(codigo, &c, 1);
+                c = getc(servicio_archivo);
+            }
+            nuevo_itinerario = crearItinerario(codigo);
+        }
+        else if (isdigit(c))
+        {
+            /* Leemos la hora en que sale el autobus y su capacidad */
+            char string_hora[9] = "";
+            while (isdigit(c) || c == ':')
+            {
+                strncat(string_hora, &c, 1);
+                c = getc(servicio_archivo);
+            }
+            fscanf(servicio_archivo, "%d", &carga);
+        }
+        else if (c == '\n')
+        {
+            /* guardemos el nuevo itinerario en el arreglo de servicio_paradas */
+            servicio_paradas[i] = nuevo_itinerario;
+            i++;
+        }
+        c = getc(servicio_archivo);
+    }
+    /* nos falta guardar el ultimo nuevo itinerario en el arreglo */
+    servicio_paradas[i] = nuevo_itinerario;
+
+    /* Cerramos el archivo */
+    fclose(servicio_archivo);
+    
     char *a;
     servicio_autobus *nuevoServicio;
     itinerario *itinerario;
