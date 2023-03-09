@@ -190,39 +190,5 @@ int main(int argc, char *argv[])
     /* Cerramos el archivo */
     fclose(servicio_archivo);
     
-    char *a;
-    servicio_autobus *nuevoServicio;
-    itinerario *itinerario;
-    a = malloc(30);
-    strcpy(a,"PABE");
-    itinerario = crearItinerario(a);
-    a = malloc(30);
-    strcpy(a,"8:00:00");
-    agregarServicio(a,10,itinerario);
-    a = malloc(30);
-    strcpy(a,"9:30:00");
-    agregarServicio(a,2,itinerario);
-    a = malloc(30);
-    strcpy(a,"11:15:00");
-    agregarServicio(a,15,itinerario);
-
-    printf("intinerario de la parada: %s\n",itinerario->cod);
-    servicio_autobus *tomado = tomarServicio(itinerario);
-
-    nodo *actual = itinerario->servicios->siguiente;
-    servicio_autobus *contenido = (servicio_autobus *)(actual->contenido);
-    
-    while (contenido != NULL)
-    {
-        strftime(a,30,"%H:%M,%S",localtime(&(contenido->hora)));
-        printf("%s - %d\n",a,contenido->capacidad);
-        actual = actual->siguiente;
-        contenido = (servicio_autobus *)(actual->contenido);
-    }
-    
-    strftime(a,30,"%H:%M,%S",localtime(&(tomado->hora)));
-    printf("y tome el servicio: %s-%d\n",a,tomado->capacidad);
-
-
     return 0;
 }
