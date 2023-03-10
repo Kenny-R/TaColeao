@@ -2,6 +2,7 @@
     #include <time.h>
     #include <stdio.h>
     #include "carga.h"
+    #include "itinerario.h"
     
     #define UTILIDADES_LIB
     #define MAX_NAME 20 /*El tamaño maximo de un nombre de archivo*/
@@ -27,4 +28,12 @@
     */
     void build_loads(int n, FILE *fp, t_carga *arr[]);
 
+    /*
+    Funcion que lee el archivo de servicio y construye el arreglo donde se guarda los servicios de las rutas
+    Argumentos:
+        n: un entero que indica el numero de rutas
+        *fp: un apuntador a un archivo
+    arr: un arreglo de tipo itinerario
+    */
+    void build_services(int n, FILE *fp, itinerario *arr[]);
 #endif
