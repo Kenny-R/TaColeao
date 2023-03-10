@@ -11,7 +11,7 @@
 #include "carga.h"
 #include "itinerario.h"
 
-/* Funcion temporal del hilo */ 
+/* Funcion temporal del hilo */
 void func(void *ptr)
 {
     while (1)
@@ -23,10 +23,9 @@ void func(void *ptr)
     return;
 }
 
-
 int crearProcesos(int argc, char *argv[])
-{    
-    
+{
+
     /* Creacion de los procesos e hilos */
 
     int n = 20; /* numero de procesos */
@@ -62,7 +61,7 @@ int crearProcesos(int argc, char *argv[])
 
             close(fds[i][0]); /* cierro la parte de lectura del pipe */
             int id[m];        /* ID de los hilos (autobuses) */
-            
+
             /* creo los hilos */
             int j;
             for (j = 0; j < m; j++)
@@ -70,7 +69,7 @@ int crearProcesos(int argc, char *argv[])
                 id[j] = i * 10 + j;
                 pthread_create(&hilos[i][j], NULL, (void *)&func, (void *)&id[j]);
             }
-                
+
             /* aun no finalizo el proceso hijo */
             while (1)
             {
@@ -106,13 +105,9 @@ int crearProcesos(int argc, char *argv[])
     {
         wait(NULL);
     }
-    
-    
-    
+
     return 0;
-
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -130,7 +125,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     n = get_number_routes(load_file);
-    
+
     /* Creamos un arreglo para las cargas */
     t_carga *loads[n];
 
@@ -140,77 +135,24 @@ int main(int argc, char *argv[])
     build_loads(n, load_file, loads);
     /* Cerramos el archivo de carga */
     fclose(load_file);
-    
-    /* ya va xD */
-    
+
     /* Leemos el archivo de servicio */
-    strcpy(nombre_archivo, argv[2]);
-    FILE *servicio_archivo = fopen(nombre_archivo, "r");
+    strcpy(file_name, argv[2]);
+    FILE *service_file = fopen(file_name, "r");
 
     /* Verifiquemos si se pudo abrir correctamente el archivo */
-    if (servicio_archivo == NULL)
+    if (service_file == NULL)
     {
-        printf("Error no se pudo abrir el archivo\n");
+        printf("The file could not be open\n");
         return 1;
     }
 
-    char c;
-    int numero_de_itinerarios = 0;
-    /* primero revisemos cuantas lineas hay en el archivo para saber el numero de itinerarios */
-    while (c != EOF)
-    {
-        if (c == '\n')
-            numero_de_itinerarios++;
-        c = getc(servicio_archivo);
-    }
-    numero_de_itinerarios++;
-
-    /* Creamos un arreglo para guardar las paradas */
-    itinerario *servicio_paradas[numero_de_itinerarios];
-
-    /* volvemos a leer el archivo desde el inicio */
-    rewind(servicio_archivo);
-
-    int carga, i = 0;
-    itinerario *nuevo_itinerario;
-    c = getc(servicio_archivo);
-    while (c != EOF)
-    {
-        if (isalpha(c))
-        {
-            /* Leemos el codigo de la parada */
-            char codigo[4] = "";
-            while (isalpha(c))
-            {
-                strncat(codigo, &c, 1);
-                c = getc(servicio_archivo);
-            }
-            nuevo_itinerario = crearItinerario(codigo);
-        }
-        else if (isdigit(c))
-        {
-            /* Leemos la hora en que sale el autobus y su capacidad */
-            char string_hora[9] = "";
-            while (isdigit(c) || c == ':')
-            {
-                strncat(string_hora, &c, 1);
-                c = getc(servicio_archivo);
-            }
-            fscanf(servicio_archivo, "%d", &carga);
-        }
-        else if (c == '\n')
-        {
-            /* guardemos el nuevo itinerario en el arreglo de servicio_paradas */
-            servicio_paradas[i] = nuevo_itinerario;
-            i++;
-        }
-        c = getc(servicio_archivo);
-    }
-    /* nos falta guardar el ultimo nuevo itinerario en el arreglo */
-    servicio_paradas[i] = nuevo_itinerario;
+    /* Creamos un arreglo para guardar los servicios de cada parada */
+    itinerario *routes_service[n];
+    build_services(n, service_file, routes_service);
 
     /* Cerramos el archivo */
-    fclose(servicio_archivo);
-    
+    fclose(service_file);
+
     return 0;
 }
