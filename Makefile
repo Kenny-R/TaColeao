@@ -20,7 +20,7 @@ $(PROGRAM): $(OBJECTS)
 $(OBJDIR)/main.o: main.c $(OBJDIR) utilidades.h
 	$(COMP) main.c -o $(OBJDIR)/main.o -ansi
 
-$(OBJDIR)/utilidades.o: utilidades.c $(OBJDIR) carga.h $(OBJDIR) utilidades.h
+$(OBJDIR)/utilidades.o: utilidades.c $(OBJDIR) carga.h $(OBJDIR) itinerario.h $(OBJDIR) utilidades.h
 	$(COMP) utilidades.c -o $(OBJDIR)/utilidades.o -ansi
 
 $(OBJDIR)/listaEnlazada.o: listaEnlazada.c $(OBJDIR) listaEnlazada.h
