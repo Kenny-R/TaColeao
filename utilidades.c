@@ -1,4 +1,5 @@
 #include "utilidades.h"
+#include "itinerario.h"
 #include "carga.h"
 #include <stdlib.h>
 #include <stdio.h>
