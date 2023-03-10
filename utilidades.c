@@ -173,3 +173,52 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
         c = getc(fp);
     }
 }
+
+/*
+ Funcion que lee el archivo de servicio y construye el arreglo donde se guarda los servicios de las rutas
+ Argumentos:
+    n: un entero que indica el numero de rutas
+    *fp: un apuntador a un archivo
+    arr: un arreglo de tipo itinerario
+ */
+void build_services(int n, FILE *fp, itinerario *arr[])
+{
+    int capacity, i = 0;
+    itinerario *new_itinerary;
+    char c = getc(fp);
+    while (c != EOF)
+    {
+        if (isalpha(c))
+        {
+            /* Leemos el codigo de la parada */
+            char codigo[4] = "";
+            while (isalpha(c))
+            {
+                strncat(codigo, &c, 1);
+                c = getc(fp);
+            }
+            new_itinerary = crearItinerario(codigo);
+        }
+        else if (isdigit(c))
+        {
+            /* Leemos la hora en que sale el autobus y su capacidad */
+            char string_hora[6] = "";
+            while (isdigit(c) || c == ':')
+            {
+                strncat(string_hora, &c, 1);
+                c = getc(fp);
+            }
+            fscanf(fp, "%d", &capacity);
+        }
+        else if (c == '\n')
+        {
+            /* guardemos el nuevo itinerario en el arreglo de routes_service */
+            arr[i] = new_itinerary;
+            i++;
+        }
+        c = getc(fp);
+    }
+    /* nos falta guardar el ultimo nuevo itinerario en el arreglo */
+    arr[i] = new_itinerary;
+}
+
