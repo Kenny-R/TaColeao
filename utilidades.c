@@ -1,11 +1,18 @@
 #include "utilidades.h"
-#include "itinerario.h"
-#include "carga.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-/* Comprueba los datos de entrada si todo fue correcto un numero distinto mayor a 0 si algo fallo devuelve un numero menor
-o igual a 0*/
+/* 
+    Comprueba los datos de entrada si todo fue correcto un numero distinto mayor a 0 si algo fallo devuelve un numero menor
+    o igual a 0
+    Argumentos:
+        argc: contador de argumentos en argv
+        argv: arreglo de argumentos
+        nameC: nombre por defecto para el archivo de carga
+        t: valor real de un minuto de simulacion
+    Retrona:
+        Un numero mayor que 0 si todo fue bien. Un numero menor o igual a 0 si algo salio mal 
+*/
 int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
     FILE * temp;
     /*comprobamos que la entrada tenga mas de 1 argumento*/
@@ -76,6 +83,14 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
     return 0;
 };
 
+/*
+    Comprueba si las horas y los minutos estan en el rango valido
+    Argumentos:
+        horas: un entero que representa las horas
+        minutos: un entero que representa los minutos
+    Retorna:
+        Un numero mayor que 0 si todo fue bien. Un numero menor o igual a 0 si algo salio mal 
+*/
 int verificarTiempo(int horas, int minutos) {
     if (horas > 23 || horas < 0) 
         return 0;
@@ -85,11 +100,18 @@ int verificarTiempo(int horas, int minutos) {
     
 }
 
+/*
+    Transforma un string, que representa una hora con el formato HH:MM, en un time_t
+    Argumentos:
+        str: El string con la hora en formato HH:MM
+    Retorna:
+        un time_t donde todos los datos son los por defecto menos las horas y los minutos
+*/
 time_t strToTime(char *str) {
     int horas, minutos;
     sscanf(str,"%d:%d",&horas,&minutos);
     if (verificarTiempo(horas,minutos) == 0) {
-        printf("Error with the time");
+        printf("Error with the time\n");
         return;
     }
     
@@ -139,20 +161,16 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
 
     /* Comenzamos a leer las siguientes lineas del archivo */
     t_carga *new_load;
-    char load_name[30], travel_time[6], code[4], minutes[3];
-    int g[8], h, m;
+    char *load_name, *travel_time, *code;
+    int g[8];
     int i;
     for (i = 0; i < n; ++i)
     {
-        fscanf(fp, "%[^,], %[^,],%d:%d,%d,%d,%d,%d,%d,%d,%d,%d", code, load_name, &h, &m, &g[0], &g[1], &g[2], &g[3], &g[4], &g[5], &g[6], &g[7]);
-
-        /* tiempo de recorrido en string */
-        sprintf(travel_time, "%d", h);
-        strcat(travel_time, ":");
-        if (m < 10)
-            strcat(travel_time, "0");
-        sprintf(minutes, "%d", m);
-        strcat(travel_time, minutes);
+        load_name = malloc(30);
+        travel_time = malloc(6);
+        code = malloc(4);
+        
+        fscanf(fp, "%[^,], %[^,], %[^,], %d, %d, %d, %d, %d, %d, %d, %d", code, load_name,travel_time, &g[0], &g[1], &g[2], &g[3], &g[4], &g[5], &g[6], &g[7]);
 
         /* Creamos la carga con los datos que nos dieron */
         new_load = crearCarga(code, load_name, travel_time);
@@ -167,12 +185,16 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
         agregarGrupo("12:00", g[6], new_load);
         agregarGrupo("13:00", g[7], new_load);
 
+
         /* Agregamos esta nueva carga al arreglo */
         arr[i] = new_load;
 
         /* obtenemos el caracter de la nueva linea */
-        c = getc(fp);
+        if(getc(fp) != '\n'){
+            getc(fp);
+        }
     }
+
 }
 
 /*
@@ -192,7 +214,7 @@ void build_services(int n, FILE *fp, itinerario *arr[])
         if (isalpha(c))
         {
             /* Leemos el codigo de la parada */
-            char codigo[4] = "";
+            char *codigo = malloc(4);
             while (isalpha(c))
             {
                 strncat(codigo, &c, 1);
@@ -203,13 +225,14 @@ void build_services(int n, FILE *fp, itinerario *arr[])
         else if (isdigit(c))
         {
             /* Leemos la hora en que sale el autobus y su capacidad */
-            char string_hora[6] = "";
+            char *string_hora = malloc(6);
             while (isdigit(c) || c == ':')
             {
                 strncat(string_hora, &c, 1);
                 c = getc(fp);
             }
             fscanf(fp, "%d", &capacity);
+            agregarServicio(string_hora,capacity,new_itinerary);
         }
         else if (c == '\n')
         {
@@ -223,3 +246,58 @@ void build_services(int n, FILE *fp, itinerario *arr[])
     arr[i] = new_itinerary;
 }
 
+/*
+    Dado dos nombres y dos arreglos de cargas e itinerarios, lee los archivos con esos nombres y rellena
+    su arreglo correspondiente.
+    Argumentos:
+        carga: Nombre del archivo de caracterizacion de carga
+        servicio: Nombre del archivo de caracterizacion de servicio
+        loads: La direccion donde se almacenara el arreglo con todas las cargas en el archivo carga
+        routes_service: La direccion donde se almacenara el arreglo con todos los servicios en el archivo servicio
+*/
+void leerDatos(char *carga, char *servicio, t_carga ***loads, itinerario ***routes_service) {
+    /* numero de rutas */
+    int n = 0;
+
+    /* primero, abrimos y Leemos el archivo de carga para obtener el numero de rutas */
+    char file_name[20];
+    strcpy(file_name, carga);
+    FILE *load_file = fopen(file_name, "r");
+    /* Verifiquemos si se pudo abrir correctamente el archivo */
+    if (load_file == NULL)
+    {
+        printf("The file could not be open\n");
+        return;
+    }
+    n = get_number_routes(load_file);
+
+    /* Creamos un arreglo para las cargas */
+    *loads=malloc(sizeof(t_carga*)*n);
+
+    /* Volvemos a leer desde el comienzo del archivo */
+    rewind(load_file);
+    /* Y construiremos el arreglo de las cargas */
+    build_loads(n, load_file, *loads);
+    /* Cerramos el archivo de carga */
+    fclose(load_file);
+
+    /* Leemos el archivo de servicio */
+    memset(file_name,0,20);
+    strcpy(file_name, servicio);
+    FILE *service_file = fopen(file_name, "r");
+
+    /* Verifiquemos si se pudo abrir correctamente el archivo */
+    if (service_file == NULL)
+    {
+        printf("The file could not be open\n");
+        return;
+    }
+    n = get_number_routes(service_file);
+    rewind(service_file);
+    /* Creamos un arreglo para guardar los servicios de cada parada */
+    *routes_service = malloc(sizeof(itinerario*)*n);
+    build_services(n, service_file, *routes_service);
+
+    /* Cerramos el archivo */
+    fclose(service_file);
+}

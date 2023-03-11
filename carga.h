@@ -16,11 +16,54 @@
         nodo *grupos;
     } t_carga;
 
-    void agregarGrupo(char *hora, int cantidad,t_carga *carga);
-
-    time_t reducirCarga(int *cantidad, t_carga *carga);
-
+    /*
+        Dado un codigo, un nombre y un tiempo de recorrido crea una nueva carga
+        Argumentos:
+            cod: La direccion donde se encuentra el codigo que se va a almacenar
+            name: La direccion donde se encuentra el nombre que se va a almacenar
+            tiempoRecorr: La direccion donde se encuentra el tiempo de recorrido
+                        que se va a almacenar
+        Retorna:
+            un struct t_carga que almacena toda la informacion relaciondad a una
+            carga
+    */
     t_carga *crearCarga(char *cod, char *name, char *tiempoRecorr);
 
+    /*
+        Dado una hora y una cantidad las agurapa en un struct que representa un grupo
+        Argumentos:
+            hora: La hora a la que llego el grupo
+            cantidad: La cantidad de individuos que componen al grupo
+        Retorna:
+            un struct t_grupo que representa a un grupo de individuos
+    */
     t_grupo *crearGrupo(char *hora, int cantidad);
+    /*
+        Dado una hora, una cantidad y una carga crea un grupo y lo agrega al final de la carga
+        Argumentos:
+            hora: La hora a la que llego el grupo
+            cantidad: La cantidad de individuos que componen al grupo
+            carga: La carga donde se agregara el nuevo grupo
+    */
+    void agregarGrupo(char *hora, int cantidad,t_carga *carga);
+
+    /*
+        Dada una cantidad se intena reducir lo mas posible esta cantidad usando el primer grupo 
+        de la cola de la carga
+        Argumentos:
+            cantidad: la direccion donde se encuentra la cantidad que se quiere intentar reducir
+            carga: Carga donde se reducira la cantidad 
+        Retorna:
+            un time_t con la hora del grupo que se uso para reducir la cantidad solicitada (no 
+            necesariamente se reduce toda la cantidad que se requiere puede reducirse menos pero
+            se actualiza el contenido de cantidad)
+    */
+    time_t reducirCarga(int *cantidad, t_carga *carga);
+
+    /*
+        dada una carga libera la memoria utilizada por esta carga
+        Argumentos:
+            carga: La carga que se va a liberar 
+    */
+    void eliminarCargar(t_carga *carga);
 #endif

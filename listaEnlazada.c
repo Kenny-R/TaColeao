@@ -2,7 +2,11 @@
 #include "listaEnlazada.h"
 #include <stdio.h>
 
-
+/*
+    Crea una lista enlazada vacia
+    Retorna:
+        la cabeza de una lista enlazada. Esta cabeza debe tener contenido NULL
+*/
 nodo * crearListaEnlazada(){
     nodo * head = malloc(sizeof(nodo));
 
@@ -13,6 +17,13 @@ nodo * crearListaEnlazada(){
     return head;
 }
 
+/*
+    dado un contenido y una lista enlazada crea un nuevo nodo y lo inserta al 
+    final de la lista
+    Argumentos:
+        contenido: El contenido que tendra el nuevo nodo
+        listaEnlazada: La lista enlazada donde se insertara el nuevo nodo
+*/
 void anadirNodoAlFinal(void * contenido, nodo * listaEnlazada) {
 
     nodo * nuevoNodo = malloc(sizeof(nodo));
@@ -26,6 +37,14 @@ void anadirNodoAlFinal(void * contenido, nodo * listaEnlazada) {
     listaEnlazada -> anterior = nuevoNodo;
 }
 
+
+/*
+    dado un contenido y una lista enlazada crea un nuevo nodo y lo inserta al 
+    inicio de la lista
+    Argumentos:
+        contenido: El contenido que tendra el nuevo nodo
+        listaEnlazada: La lista enlazada donde se insertara el nuevo nodo
+*/
 void anadirNodoAlInicio(void * contenido, nodo * listaEnlazada) {
 
     nodo * nuevoNodo = malloc(sizeof(nodo));
@@ -39,6 +58,11 @@ void anadirNodoAlInicio(void * contenido, nodo * listaEnlazada) {
     nuevoNodo-> siguiente -> anterior = nuevoNodo;
 }
 
+/*
+    libera la memoria ocupada por una lista enlazada
+    Argumento:
+        listaEnlazada: La lista enlazada a liberar
+*/
 void eliminarLista(nodo * listaEnlazada) {
 
     /*vamos eliminando del ultimo hasta el primero*/
@@ -53,6 +77,11 @@ void eliminarLista(nodo * listaEnlazada) {
     
 }
 
+/*
+    Elimina un nodo de una lista enlazada y libera su espacio ocupado
+    Argumento:
+        nodo_a_eliminar: El nodo a eliminar (debe pertenecer a una lista enlazada)
+*/
 void eliminarNodo(nodo *nodo_a_eliminar){
     nodo_a_eliminar->anterior->siguiente = nodo_a_eliminar->siguiente;
     nodo_a_eliminar->siguiente->anterior = nodo_a_eliminar->anterior;

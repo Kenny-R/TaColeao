@@ -111,48 +111,21 @@ int crearProcesos(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    /* numero de rutas */
-    int n = 0;
+    char *a = "carga.csv";
+    char *b = "servicio2019.txt";
+    t_carga **loads;
+    itinerario **routes_service;
+    
+    leerDatos(a,b,&loads,&routes_service);
+    printf("carga: %s, %s\n",loads[4]->cod,loads[4]->name);
+    t_grupo * temp = (t_grupo *)(loads[4]->grupos->siguiente->contenido);
+    printf("grupo 1: %d\n",temp->cantidad);
 
-    /* primero, abrimos y Leemos el archivo de carga para obtener el numero de rutas */
-    char file_name[20];
-    strcpy(file_name, argv[4]);
-    FILE *load_file = fopen(file_name, "r");
-    /* Verifiquemos si se pudo abrir correctamente el archivo */
-    if (load_file == NULL)
-    {
-        printf("The file could not be open\n");
-        return 1;
-    }
-    n = get_number_routes(load_file);
+    printf("servicio: %s\n",routes_service[4]->cod);
+    servicio_autobus * temp1 = (servicio_autobus *)(routes_service[4]->servicios->siguiente->contenido);
+    printf("servicio 1: %d\n",temp1->capacidad);
 
-    /* Creamos un arreglo para las cargas */
-    t_carga *loads[n];
 
-    /* Volvemos a leer desde el comienzo del archivo */
-    rewind(load_file);
-    /* Y construiremos el arreglo de las cargas */
-    build_loads(n, load_file, loads);
-    /* Cerramos el archivo de carga */
-    fclose(load_file);
 
-    /* Leemos el archivo de servicio */
-    strcpy(file_name, argv[2]);
-    FILE *service_file = fopen(file_name, "r");
-
-    /* Verifiquemos si se pudo abrir correctamente el archivo */
-    if (service_file == NULL)
-    {
-        printf("The file could not be open\n");
-        return 1;
-    }
-
-    /* Creamos un arreglo para guardar los servicios de cada parada */
-    itinerario *routes_service[n];
-    build_services(n, service_file, routes_service);
-
-    /* Cerramos el archivo */
-    fclose(service_file);
-
-    return 0;
-}
+    
+}   
