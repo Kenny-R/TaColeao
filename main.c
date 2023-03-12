@@ -41,10 +41,6 @@ int main(int argc, char *argv[])
     pid_t ruta[nroRutasRouteServices];
 
     int i;
-    /* pipe de empezar */
-    int pipeBegin[nroRutasRouteServices][2];
-    for (i = 0; i < nroRutasRouteServices; i++)
-        pipe(pipeBegin[i]);
     /* pipe para comunicacion de proceso padre a cada hijo */
     int fds[nroRutasRouteServices][2];
     for (i = 0; i < nroRutasRouteServices; i++)
@@ -62,36 +58,32 @@ int main(int argc, char *argv[])
             break;
         }
         else if (ruta[i] == 0)
-        {                           /*HIJO*/
-            close(pipeBegin[i][1]); /* cierro la parte de escritura del pipe de empezar */
-            close(fds[i][0]);       /* cierro la parte de lectura del pipe de comunicacion */
-
+        { /*HIJO*/
             /* reviso si puedo empezar */
             while (1)
             {
-                read(pipeBegin[i][0], buffer[i], 9);
+                printf("Estoy esperando para comenzar %s \n", route_services[i]->cod);
+                read(fds[i][0], buffer[i], 9);
                 if (strcmp(buffer[i], "Empieza\n") == 0)
-                {
                     break;
-                }
             }
-            printf("EMPEZANDO %s \n", route_services[i]->cod);
+            printf("Empezando %s \n", route_services[i]->cod);
+
+            close(fds[i][0]); /* cierro la parte de lectura del pipe de comunicacion */
 
             controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads));
             exit(0);
         }
         else
-        {                           /*PADRE*/
-            close(pipeBegin[i][0]); /* cierro la parte de lectura del pipe de empezar */
-            close(fds[i][1]);       /* cierro la parte de escritura del pipe de comunicacion */
-
+        { /*PADRE*/
             if (i == nroRutasRouteServices - 1)
             {
+                printf("Padre avisando a todos los procesos hijos \n");
                 int j;
-                printf("AVISO\n");
                 for (j = 0; j < nroRutasRouteServices; j++)
                 {
-                    write(pipeBegin[j][1], "Empieza\n", 9);
+                    write(fds[j][1], "Empieza\n", 9);
+                    close(fds[j][1]); /* cierro la parte de escritura del pipe */
                 }
             }
 
