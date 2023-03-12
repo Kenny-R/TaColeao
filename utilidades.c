@@ -213,14 +213,13 @@ void build_services(int n, FILE *fp, itinerario *arr[])
         if (isalpha(c))
         {
             /* Leemos el codigo de la parada */
-            char codigo[MAX_CODE_LENGTH];
+            char codigo[MAX_CODE_LENGTH] = "";
             while (isalpha(c))
             {
                 strncat(codigo, &c, 1);
                 c = getc(fp);
             }
             new_itinerary = crearItinerario(codigo);
-            memset(codigo,0,MAX_CODE_LENGTH);
         }
         else if (isdigit(c))
         {
