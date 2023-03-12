@@ -66,4 +66,18 @@
             carga: La carga que se va a liberar 
     */
     void eliminarCargar(t_carga *carga);
+
+    /*
+        dado un codigo y un arreglo de cargas, busca en este arreglo 
+        la carga que tenga ese codigo. Si no hay un arreglo con ese 
+        codigo devuelve NULL
+        Argumento:
+            cod: El codigo a buscar
+            arr: El arreglo de cargas
+            len: El largo del arreglo
+        Retorna:
+            la direccion de la carga con el codigo solicitado, o null si 
+            no se encontro la carga.
+    */
+    t_carga * buscarCarga(char *cod, t_carga **arr, int len);
 #endif

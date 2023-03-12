@@ -2,6 +2,7 @@
 #include "carga.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*
     Dado un codigo, un nombre y un tiempo de recorrido crea una nueva carga
@@ -16,8 +17,13 @@
 */
 t_carga *crearCarga(char *cod, char *name, char *tiempoRecorr){
     t_carga *nuevaCarga = malloc(sizeof(t_carga));
-    nuevaCarga -> cod = cod;
-    nuevaCarga -> name = name;
+    
+    nuevaCarga -> cod = malloc(MAX_CODE_LENGTH);
+    strcpy(nuevaCarga->cod,cod);
+    
+    nuevaCarga -> name = malloc(MAX_LOAD_NAME_LENGTH);
+    strcpy(nuevaCarga->name,name);
+
     nuevaCarga -> recorr = strToTime(tiempoRecorr);
     nuevaCarga -> grupos = crearListaEnlazada();
 
@@ -92,5 +98,31 @@ time_t reducirCarga(int *cantidad, t_carga *carga) {
 */
 void eliminarCargar(t_carga *carga) {
     eliminarLista(carga->grupos);
+    free(carga->cod);
+    free(carga->name);
     free(carga);
+}
+
+/*
+    dado un codigo y un arreglo de cargas, busca en este arreglo 
+    la carga que tenga ese codigo. Si no hay un arreglo con ese 
+    codigo devuelve NULL
+    Argumento:
+        cod: El codigo a buscar
+        arr: El arreglo de cargas
+        len: El largo del arreglo
+    Retorna:
+        la direccion de la carga con el codigo solicitado, o null si 
+        no se encontro la carga.
+*/
+t_carga * buscarCarga(char *cod, t_carga **arr, int len){
+    t_carga *buscado = NULL;
+    int i;
+    for (i = 0; i < len; i++ ) {
+        if (strcmp(cod,arr[i]->cod) == 0) {
+            buscado = arr[i];
+            break;
+        }
+    }
+    return buscado;
 }

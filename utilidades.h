@@ -5,7 +5,7 @@
     #include "itinerario.h"
     
     #define UTILIDADES_LIB
-    #define MAX_NAME 20 /*El tamaño maximo de un nombre de archivo*/
+    #define MAX_NAME_FILE 20 /*El tamaño maximo de un nombre de archivo*/
     #define MAX_LOAD_NAME_LENGTH 30
     #define MAX_TRAVEL_TIME_LENGTH 6
     #define MAX_CODE_LENGTH 4
@@ -61,13 +61,33 @@
     void build_services(int n, FILE *fp, itinerario *arr[]);
     
     /*
-        Dado dos nombres y dos arreglos de cargas e itinerarios, lee los archivos con esos nombres y rellena
-        su arreglo correspondiente.
-        Argumentos:
-            carga: Nombre del archivo de caracterizacion de carga
-            servicio: Nombre del archivo de caracterizacion de servicio
-            loads: La direccion donde se almacenara el arreglo con todas las cargas en el archivo carga
-            routes_service: La direccion donde se almacenara el arreglo con todos los servicios en el archivo servicio
+        Dado el nombre de un archivo que representa una representacion de la carga de una parada, 
+        rellena un array con todos los datos del archivo.
+        Argumento:
+            carga: El nombre(o direccion) del archivo a leer
+            numeroRutas: un apuntador a un entero donde se almacenara el numero de rutas del archivo
+        Retorna:
+            Un arreglo de structs t_carga que representa la carga de cada parada 
     */
-    void leerDatos(char *carga, char *servicio, t_carga ***loads, itinerario ***routes_service);
+    t_carga ** leerCarga(char *carga, int *numeroRutas);
+    
+    /*
+        Dado el nombre de un archivo que representa una representacion del servicio de una parada, 
+        rellena un array con todos los datos del archivo.
+        Argumento:
+            servicio: El nombre(o direccion) del archivo a leer
+            numeroRutas: un apuntador a un entero donde se almacenara el numero de rutas del archivo
+        Retorna:
+            Un arreglo de structs itinerario que representa el servicio para cada parada 
+    */
+    itinerario ** leerServicio(char *servicio, int *numeroRutas);
+
+    /*
+        Dado un apuntador a un time_t imprime la informacion en 
+        formato HH:MM. Pone un \n al final de la impresion siempre
+        Argumento:
+            hora: el time_t con la infromacion
+    */
+    void imprimirHora(time_t *hora);
+
 #endif

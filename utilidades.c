@@ -1,7 +1,10 @@
-#include "utilidades.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include "utilidades.h"
+
 /* 
     Comprueba los datos de entrada si todo fue correcto un numero distinto mayor a 0 si algo fallo devuelve un numero menor
     o igual a 0
@@ -41,7 +44,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
                 return -1;
             }
             fclose(temp);
-            memset(nameC,0,MAX_NAME);
+            memset(nameC,0,MAX_NAME_FILE);
             strcpy(nameC,argv[4]);
 
         } else if (strcmp(argv[3],"-t") == 0) { /* si existe comprobamos que el -t es correcto*/
@@ -69,7 +72,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
             }
         fclose(temp);
         
-        memset(nameC,0,MAX_NAME);
+        memset(nameC,0,MAX_NAME_FILE);
         strcpy(nameC,argv[4]);
         
         if ((strcmp(argv[5],"-t") != 0) || (atof(argv[6]) <= 0)){ /* no puedes tener un tiempo de 0 o negativo*/
@@ -161,15 +164,11 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
 
     /* Comenzamos a leer las siguientes lineas del archivo */
     t_carga *new_load;
-    char *load_name, *travel_time, *code;
+    char load_name[MAX_LOAD_NAME_LENGTH], travel_time[MAX_TRAVEL_TIME_LENGTH], code[MAX_CODE_LENGTH];
     int g[8];
     int i;
     for (i = 0; i < n; ++i)
-    {
-        load_name = malloc(30);
-        travel_time = malloc(6);
-        code = malloc(4);
-        
+    {        
         fscanf(fp, "%[^,], %[^,], %[^,], %d, %d, %d, %d, %d, %d, %d, %d", code, load_name,travel_time, &g[0], &g[1], &g[2], &g[3], &g[4], &g[5], &g[6], &g[7]);
 
         /* Creamos la carga con los datos que nos dieron */
@@ -210,22 +209,24 @@ void build_services(int n, FILE *fp, itinerario *arr[])
     itinerario *new_itinerary;
     char c = getc(fp);
     while (c != EOF)
-    {
+    {   
         if (isalpha(c))
         {
             /* Leemos el codigo de la parada */
-            char *codigo = malloc(4);
+            char codigo[MAX_CODE_LENGTH];
             while (isalpha(c))
             {
                 strncat(codigo, &c, 1);
                 c = getc(fp);
             }
             new_itinerary = crearItinerario(codigo);
+            memset(codigo,0,MAX_CODE_LENGTH);
         }
         else if (isdigit(c))
         {
             /* Leemos la hora en que sale el autobus y su capacidad */
-            char *string_hora = malloc(6);
+            /*(Tiene el mismo tamaño que un travel time)*/
+            char *string_hora = malloc(MAX_TRAVEL_TIME_LENGTH);
             while (isdigit(c) || c == ':')
             {
                 strncat(string_hora, &c, 1);
@@ -247,42 +248,61 @@ void build_services(int n, FILE *fp, itinerario *arr[])
 }
 
 /*
-    Dado dos nombres y dos arreglos de cargas e itinerarios, lee los archivos con esos nombres y rellena
-    su arreglo correspondiente.
-    Argumentos:
-        carga: Nombre del archivo de caracterizacion de carga
-        servicio: Nombre del archivo de caracterizacion de servicio
-        loads: La direccion donde se almacenara el arreglo con todas las cargas en el archivo carga
-        routes_service: La direccion donde se almacenara el arreglo con todos los servicios en el archivo servicio
+    Dado el nombre de un archivo que representa una representacion de la carga de una parada, 
+    rellena un array con todos los datos del archivo.
+    Argumento:
+        carga: El nombre(o direccion) del archivo a leer
+        numeroRutas: un apuntador a un entero donde se almacenara el numero de rutas del archivo
+    Retorna:
+        Un arreglo de structs t_carga que representa la carga de cada parada 
 */
-void leerDatos(char *carga, char *servicio, t_carga ***loads, itinerario ***routes_service) {
+t_carga ** leerCarga(char *carga, int *numeroRutas)  {
     /* numero de rutas */
     int n = 0;
 
     /* primero, abrimos y Leemos el archivo de carga para obtener el numero de rutas */
-    char file_name[20];
+    char file_name[MAX_NAME_FILE];
     strcpy(file_name, carga);
     FILE *load_file = fopen(file_name, "r");
     /* Verifiquemos si se pudo abrir correctamente el archivo */
     if (load_file == NULL)
     {
         printf("The file could not be open\n");
-        return;
+        return NULL;
     }
     n = get_number_routes(load_file);
-
+    
+    *numeroRutas = n;
+    
     /* Creamos un arreglo para las cargas */
-    *loads=malloc(sizeof(t_carga*)*n);
+    t_carga **loads=malloc(sizeof(t_carga*)*n);
 
     /* Volvemos a leer desde el comienzo del archivo */
     rewind(load_file);
     /* Y construiremos el arreglo de las cargas */
-    build_loads(n, load_file, *loads);
+    build_loads(n, load_file, loads);
     /* Cerramos el archivo de carga */
     fclose(load_file);
 
-    /* Leemos el archivo de servicio */
-    memset(file_name,0,20);
+    return loads;
+}
+
+/*
+    Dado el nombre de un archivo que representa una representacion del servicio de una parada, 
+    rellena un array con todos los datos del archivo.
+    Argumento:
+        servicio: El nombre(o direccion) del archivo a leer
+        numeroRutas: un apuntador a un entero donde se almacenara el numero de rutas del archivo
+    Retorna:
+        Un arreglo de structs itinerario que representa el servicio para cada parada 
+*/
+itinerario ** leerServicio(char *servicio, int *numeroRutas)  {
+    /* numero de rutas */
+    int n = 0;
+
+    /* primero, abrimos y Leemos el archivo de carga para obtener el numero de rutas */
+    char file_name[MAX_NAME_FILE];
+
     strcpy(file_name, servicio);
     FILE *service_file = fopen(file_name, "r");
 
@@ -290,14 +310,30 @@ void leerDatos(char *carga, char *servicio, t_carga ***loads, itinerario ***rout
     if (service_file == NULL)
     {
         printf("The file could not be open\n");
-        return;
+        return NULL;
     }
-    n = get_number_routes(service_file);
+    
+    n = get_number_routes(service_file) + 1;
+    *numeroRutas = n;
+    
     rewind(service_file);
     /* Creamos un arreglo para guardar los servicios de cada parada */
-    *routes_service = malloc(sizeof(itinerario*)*n);
-    build_services(n, service_file, *routes_service);
-
+    itinerario **routes_service = malloc(sizeof(itinerario*)*n);
+    build_services(n, service_file, routes_service);
+    
     /* Cerramos el archivo */
     fclose(service_file);
+    return routes_service;
+}
+
+/*
+    Dado un apuntador a un time_t imprime la informacion en 
+    formato HH:MM. Pone un \n al final de la impresion siempre
+    Argumento:
+        hora: el time_t con la infromacion
+*/
+void imprimirHora(time_t *hora) {
+    char time[MAX_TRAVEL_TIME_LENGTH];
+    strftime(time,MAX_TRAVEL_TIME_LENGTH,"%H:%M",localtime(hora));
+    printf("%s\n",time);
 }

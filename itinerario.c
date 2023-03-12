@@ -1,5 +1,6 @@
-#include "itinerario.h"
 #include <stdlib.h>
+#include <string.h>
+#include "itinerario.h"
 #include "utilidades.h"
 
 /*
@@ -12,7 +13,8 @@
 */
 itinerario *crearItinerario(char *cod){
     itinerario *nuevoItinerario = malloc(sizeof(itinerario));
-    nuevoItinerario ->cod = cod;
+    nuevoItinerario->cod = malloc(MAX_CODE_LENGTH);
+    strncpy(nuevoItinerario->cod,cod,MAX_CODE_LENGTH);
     nuevoItinerario ->servicios = crearListaEnlazada();
 
     return nuevoItinerario;
@@ -25,6 +27,7 @@ itinerario *crearItinerario(char *cod){
 */
 void eliminarItinerario(itinerario *itinerario_a_eliminar) {
     eliminarLista(itinerario_a_eliminar->servicios);
+    free(itinerario_a_eliminar->cod);
     free(itinerario_a_eliminar);
 }
 
