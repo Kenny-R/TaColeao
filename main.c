@@ -12,6 +12,11 @@
 #include "carga.h"
 #include "itinerario.h"
 
+#define MAX_ORIGEN_LENGTH 10
+#define MAX_DESTINO_LENGTH 10
+#define MAX_HORA_LENGTH 6
+#define MAX_MENSAJE_LENGTH 30
+
 /* Seccion de codigo compartida por todos*/
 int nroRutasLoads;
 t_carga **loads;
@@ -23,10 +28,62 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga)
 
     printf("Se creo la ruta %s\n", infoRuta->cod);
     printf("esperamos que que los demas procesos se creen\n");
-    sleep(5);
     printf("Se elimino la ruta %s\n", infoRuta->cod);
     exit(0);
 }
+
+void enviarMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[]) {
+    
+    if (strlen(origen) > MAX_ORIGEN_LENGTH ||
+        strlen(destino) > MAX_DESTINO_LENGTH||
+        strlen(mensaje) > MAX_MENSAJE_LENGTH) {
+            printf("No se puede enviar un mensaje tan grande\n");
+            return;
+        }
+    /*Creamos el str de la hora*/
+    char time[6];
+    strftime(time,6,"%H:%M",localtime(hora));
+    
+    /*calculamos parte del tamaño del mensaje*/
+    int n = strlen(origen) + 1 + strlen(destino) + 1 + strlen(time) + 1 + strlen(mensaje)+1;
+    
+    /*tansfromamos el entro n en un string*/
+    char largo[sizeof(int)*8+1];
+    sprintf(largo,"%d",n);
+
+    /*Calculamos el tamaño total del mensaje*/
+    int m = n + strlen(largo) + 1;
+    
+    /*creamos el mensaje final*/
+    char mensajeFinal[m];
+    sprintf(mensajeFinal,"%d|%s|%s|%s|%s\0",n,origen,destino,time,mensaje);
+    /*Enviamos el mensaje*/
+    write(*fd,mensajeFinal,m);
+}
+
+void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[]) {
+    /*leemos la primera parte del mensaje hasta que encontremos un "|" */
+    char c[2];
+    char largo[sizeof(int)*8+1] = "";
+    while (1) {
+        read(*fd,c,1);
+        c[1] = '\0';
+        if (c[0] != '|') {
+            strcat(largo,c);
+        } else {
+            break;
+        }
+    }
+
+    int n = atoi(largo);
+    char contenido[n];
+    read(*fd,contenido,n);
+    char time[6];
+    sscanf(contenido,"%[^|]|%[^|]|%[^|]|%[^|]",origen,destino,time,mensaje);
+    *hora = strToTime(time);
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -46,7 +103,7 @@ int main(int argc, char *argv[])
     for (i = 0; i < nroRutasRouteServices; i++)
         pipe(fds[i]);
 
-    char buffer[20][30]; /* puse 30 para el largo del msj del pipe */
+    char buffer[nroRutasRouteServices][30]; /* puse 30 para el largo del msj del pipe */
 
     for (i = 0; i < nroRutasRouteServices; i++)
     {
@@ -63,8 +120,13 @@ int main(int argc, char *argv[])
             while (1)
             {
                 printf("Estoy esperando para comenzar %s \n", route_services[i]->cod);
-                read(fds[i][0], buffer[i], 9);
-                if (strcmp(buffer[i], "Empieza\n") == 0)
+                /*read(fds[i][0], buffer[i], 9);*/
+                char origen[MAX_ORIGEN_LENGTH];
+                char destino[MAX_DESTINO_LENGTH];
+                time_t hora;
+                char mensaje[MAX_MENSAJE_LENGTH];
+                leerMensaje(&fds[i][0],origen,destino,&hora,mensaje);
+                if (strcmp(mensaje, "empieza") == 0)
                     break;
             }
             printf("Empezando %s \n", route_services[i]->cod);
@@ -82,7 +144,9 @@ int main(int argc, char *argv[])
                 int j;
                 for (j = 0; j < nroRutasRouteServices; j++)
                 {
-                    write(fds[j][1], "Empieza\n", 9);
+                    /*write(fds[j][1], "Empieza\n", 9);*/
+                    time_t horaDeEnvio = time(NULL);
+                    enviarMensaje(&fds[j][1],"padre",route_services[i]->cod,&horaDeEnvio,"empieza");
                     close(fds[j][1]); /* cierro la parte de escritura del pipe */
                 }
             }
