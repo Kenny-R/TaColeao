@@ -11,12 +11,14 @@
     Argumentos:
         argc: contador de argumentos en argv
         argv: arreglo de argumentos
-        nameC: nombre por defecto para el archivo de carga
-        t: valor real de un minuto de simulacion
+        nameC: string donde se almacenara el nombre del archivo de carga
+        nameS: string donde se almacenara el nombre del archivo de servicio
+        t: Valor real donde se almacenara la correspondecia de un minuto de 
+           simulacion en segundos reales
     Retrona:
         Un numero mayor que 0 si todo fue bien. Un numero menor o igual a 0 si algo salio mal 
 */
-int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
+int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t) {
     FILE * temp;
     /*comprobamos que la entrada tenga mas de 1 argumento*/
     if (argc < 3) {
@@ -35,6 +37,8 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
         return -1;
     }
     fclose(temp);
+    memset(nameS,0,MAX_NAME_FILE);
+    strcpy(nameS,argv[2]);
 
     if (argc == 5) {
         if (strcmp(argv[3],"-c") == 0) { /* si existe comprobamos que el -c es correcto*/
@@ -83,7 +87,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, double *t) {
         *t = atof(argv[6]);
     }
 
-    return 0;
+    return 1;
 };
 
 /*
@@ -335,4 +339,8 @@ void imprimirHora(time_t *hora) {
     char time[MAX_TRAVEL_TIME_LENGTH];
     strftime(time,MAX_TRAVEL_TIME_LENGTH,"%H:%M",localtime(hora));
     printf("%s\n",time);
+}
+
+double segToSmin(double t) {
+    return (1 / t);
 }

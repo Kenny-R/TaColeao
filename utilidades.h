@@ -5,7 +5,7 @@
     #include "itinerario.h"
     
     #define UTILIDADES_LIB
-    #define MAX_NAME_FILE 20 /*El tamaño maximo de un nombre de archivo*/
+    #define MAX_NAME_FILE 30 /*El tamaño maximo de un nombre de archivo*/
     #define MAX_LOAD_NAME_LENGTH 30
     #define MAX_TRAVEL_TIME_LENGTH 6
     #define MAX_CODE_LENGTH 4
@@ -16,12 +16,14 @@
         Argumentos:
             argc: contador de argumentos en argv
             argv: arreglo de argumentos
-            nameC: nombre por defecto para el archivo de carga
-            t: valor real de un minuto de simulacion
+            nameC: string donde se almacenara el nombre del archivo de carga
+            nameS: string donde se almacenara el nombre del archivo de servicio
+            t: Valor real donde se almacenara la correspondecia de un minuto de 
+            simulacion en segundos reales
         Retrona:
             Un numero mayor que 0 si todo fue bien. Un numero menor o igual a 0 si algo salio mal 
     */
-    int comprobarEntrada(int argc, char *argv[], char *nameC, double *t);
+    int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t) ;
     
     /*
         Comprueba si las horas y los minutos estan en el rango valido
@@ -89,5 +91,7 @@
             hora: el time_t con la infromacion
     */
     void imprimirHora(time_t *hora);
+
+    double segToSmin(double t);
 
 #endif

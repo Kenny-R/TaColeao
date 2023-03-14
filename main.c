@@ -22,38 +22,18 @@ int nroRutasLoads;
 t_carga **loads;
 int nroRutasRouteServices;
 itinerario **route_services;
-struct tm *hora_actual;
+time_t hora_actual;
 int finalizar_reloj = 0;
+double t;
 
 void *updatetime(void *arg)
 {
     while (!finalizar_reloj)
     {
-        printf("%d:%d:%d\n", hora_actual->tm_hour, hora_actual->tm_min, hora_actual->tm_sec);
-        if (hora_actual->tm_sec == 59)
-        {
-            hora_actual->tm_min = hora_actual->tm_min + 1;
-            hora_actual->tm_sec = 0;
-        }
-        if (hora_actual->tm_min == 59)
-        {
-            hora_actual->tm_hour = hora_actual->tm_hour + 1;
-            hora_actual->tm_min = 0;
-            hora_actual->tm_sec = 0;
-        }
-        hora_actual->tm_sec++;
+        hora_actual = hora_actual + 60;        
         sleep(1);
     }
     pthread_exit(NULL);
-}
-
-void controlRuta(itinerario *infoRuta, t_carga *infCarga)
-{
-
-    printf("Se creo la ruta %s\n", infoRuta->cod);
-    printf("esperamos que que los demas procesos se creen\n");
-    printf("Se elimino la ruta %s\n", infoRuta->cod);
-    exit(0);
 }
 
 void enviarMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[]) {
@@ -107,16 +87,47 @@ void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mens
     *hora = strToTime(time);
 }
 
+void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int *pipeEscritura, int t)
+{
+    close(*pipeEscritura);/*pipe de lectura*/
 
+    char origen[MAX_ORIGEN_LENGTH];
+    char destino[MAX_DESTINO_LENGTH];
+    time_t hora;
+    char mensaje[MAX_MENSAJE_LENGTH];
+    
+    /* reviso si puedo empezar */
+    while (1)
+    {
+        /* printf("Estoy esperando para comenzar %s \n", infoRuta->cod); */
+        leerMensaje(pipeLectura,origen,destino,&hora,mensaje);
+        if (strcmp(mensaje, "empieza") == 0)
+            break;
+    }
+
+    /* printf("Empezando %s \n", infoRuta->cod); */  
+    /* printf("Se creo la ruta %s\n", infoRuta->cod);
+    printf("trabajando....\n"); */
+    sleep(1);
+    /* printf("Se elimino la ruta %s\n", infoRuta->cod); */
+    
+    close(*pipeLectura); /* cierro la parte de lectura del pipe de comunicacion */
+    exit(0);
+}
 
 int main(int argc, char *argv[])
 {
-    char *a = "./datos/carga.csv";
-    char *b = "./datos/servicio2019.txt";
+    char archivoCarga[MAX_NAME_FILE] = "./datos/carga.csv";
+    char archivoServicio[MAX_NAME_FILE] = "./datos/servicio2019.txt";
+    t = 0.25;
+    printf("cada segundo real son %f minutos simulados\n",segToSmin(t));
+    if (comprobarEntrada(argc,argv,archivoCarga,archivoServicio,&t) != 1){
+        return EXIT_FAILURE;
+    }
 
     /* conseguimos los datos*/
-    loads = leerCarga(a, &nroRutasLoads);
-    route_services = leerServicio(b, &nroRutasRouteServices);
+    loads = leerCarga(archivoCarga, &nroRutasLoads);
+    route_services = leerServicio(archivoServicio, &nroRutasRouteServices);
 
     /* pid de los procesos (es decir, de las paradas de los autobuses) */
     pid_t ruta[nroRutasRouteServices];
@@ -140,24 +151,7 @@ int main(int argc, char *argv[])
         }
         else if (ruta[i] == 0)
         { /*HIJO*/
-            /* reviso si puedo empezar */
-            while (1)
-            {
-                printf("Estoy esperando para comenzar %s \n", route_services[i]->cod);
-                /*read(fds[i][0], buffer[i], 9);*/
-                char origen[MAX_ORIGEN_LENGTH];
-                char destino[MAX_DESTINO_LENGTH];
-                time_t hora;
-                char mensaje[MAX_MENSAJE_LENGTH];
-                leerMensaje(&fds[i][0],origen,destino,&hora,mensaje);
-                if (strcmp(mensaje, "empieza") == 0)
-                    break;
-            }
-            printf("Empezando %s \n", route_services[i]->cod);
-
-            close(fds[i][0]); /* cierro la parte de lectura del pipe de comunicacion */
-
-            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads));
+            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&fds[i][0], &fds[i][1],t);
             exit(0);
         }
         else
@@ -175,24 +169,19 @@ int main(int argc, char *argv[])
                 }
                 
                 /* inicializo el reloj a las 6:00 */
-                time_t s;
-                hora_actual = localtime(&s);
-                hora_actual->tm_hour = 6;
-                hora_actual->tm_min = 0;
+                hora_actual = strToTime("6:00");
                 
                 /* creo un hilo para que actualice el reloj */
                 pthread_t ptid;
                 pthread_create(&ptid, NULL, &updatetime, NULL);
-                
-                /* por si quieren ver como el hilo actualiza el reloj xDD */
-                while (1)
+
+                while (!finalizar_reloj)
                 {
-                    printf("%d:%d:%d\n", hora_actual->tm_hour, hora_actual->tm_min, hora_actual->tm_sec);
+                    imprimirHora(&hora_actual);       
                     sleep(1);
                 }
+                
             }
-
-            continue;
         }
     }
 
