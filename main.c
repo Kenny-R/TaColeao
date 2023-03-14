@@ -124,6 +124,9 @@ int main(int argc, char *argv[])
     if (comprobarEntrada(argc,argv,archivoCarga,archivoServicio,&t) != 1){
         return EXIT_FAILURE;
     }
+    
+    hora_actual = strToTime("6:00");
+    printf("hora actual %ld\n", hora_actual);
 
     /* conseguimos los datos*/
     loads = leerCarga(archivoCarga, &nroRutasLoads);
@@ -151,6 +154,24 @@ int main(int argc, char *argv[])
         }
         else if (ruta[i] == 0)
         { /*HIJO*/
+            nodo *nodoServicioActual = route_services[i]->servicios->siguiente;
+            servicio_autobus *contenido = (servicio_autobus *)(nodoServicioActual->contenido);
+            /* reviso si el proceso padre mando una señal al hijo */
+            while (1)
+            {
+                read(fds[i][0], buffer[i], 11);
+                if (strcmp(buffer[i], "Actualiza\n") == 0)
+                {
+                    /* actualizo */
+                    while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora_actual) <= 0)
+                    {
+                        printf("%s %ld\n", route_services[i]->cod, hora_actual);
+                        nodoServicioActual = nodoServicioActual->siguiente;
+                        contenido = (servicio_autobus *)(nodoServicioActual->contenido);
+                    }
+                    hora_actual = hora_actual + t;
+                }
+            }
             controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&fds[i][0], &fds[i][1],t);
             exit(0);
         }
@@ -160,18 +181,29 @@ int main(int argc, char *argv[])
             {
                 printf("Padre avisando a todos los procesos hijos \n");
                 int j;
-                for (j = 0; j < nroRutasRouteServices; j++)
+                while (1)
                 {
-                    /*write(fds[j][1], "Empieza\n", 9);*/
-                    time_t horaDeEnvio = time(NULL);
-                    enviarMensaje(&fds[j][1],"padre",route_services[i]->cod,&horaDeEnvio,"empieza");
-                    close(fds[j][1]); /* cierro la parte de escritura del pipe */
+                    for (j = 0; j < nroRutasRouteServices; j++) {
+                        write(fds[j][1], "Actualiza\n", strlen("Actualiza\n"));
+                        /* enviarMensaje(&fds[j][1],"padre",route_services[i]->cod,&horaDeEnvio,"Actualiza"); */
+                    }
+                    hora_actual = hora_actual + t;
+                    sleep(1); /* sleep(t)*/
                 }
                 
-                /* inicializo el reloj a las 6:00 */
+                /*
+                for (j = 0; j < nroRutasRouteServices; j++)
+                {
+                    /*write(fds[j][1], "Empieza\n", 9);
+                    time_t horaDeEnvio = time(NULL);
+                    enviarMensaje(&fds[j][1],"padre",route_services[i]->cod,&horaDeEnvio,"empieza");
+                    close(fds[j][1]); /* cierro la parte de escritura del pipe 
+                } */
+                
+                /* inicializo el reloj a las 6:00 
                 hora_actual = strToTime("6:00");
                 
-                /* creo un hilo para que actualice el reloj */
+                /* creo un hilo para que actualice el reloj 
                 pthread_t ptid;
                 pthread_create(&ptid, NULL, &updatetime, NULL);
 
@@ -180,6 +212,7 @@ int main(int argc, char *argv[])
                     imprimirHora(&hora_actual);       
                     sleep(1);
                 }
+                */
                 
             }
         }
