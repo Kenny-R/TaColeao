@@ -22,6 +22,30 @@ int nroRutasLoads;
 t_carga **loads;
 int nroRutasRouteServices;
 itinerario **route_services;
+struct tm *hora_actual;
+int finalizar_reloj = 0;
+
+void *updatetime(void *arg)
+{
+    while (!finalizar_reloj)
+    {
+        printf("%d:%d:%d\n", hora_actual->tm_hour, hora_actual->tm_min, hora_actual->tm_sec);
+        if (hora_actual->tm_sec == 59)
+        {
+            hora_actual->tm_min = hora_actual->tm_min + 1;
+            hora_actual->tm_sec = 0;
+        }
+        if (hora_actual->tm_min == 59)
+        {
+            hora_actual->tm_hour = hora_actual->tm_hour + 1;
+            hora_actual->tm_min = 0;
+            hora_actual->tm_sec = 0;
+        }
+        hora_actual->tm_sec++;
+        sleep(1);
+    }
+    pthread_exit(NULL);
+}
 
 void controlRuta(itinerario *infoRuta, t_carga *infCarga)
 {
@@ -148,6 +172,23 @@ int main(int argc, char *argv[])
                     time_t horaDeEnvio = time(NULL);
                     enviarMensaje(&fds[j][1],"padre",route_services[i]->cod,&horaDeEnvio,"empieza");
                     close(fds[j][1]); /* cierro la parte de escritura del pipe */
+                }
+                
+                /* inicializo el reloj a las 6:00 */
+                time_t s;
+                hora_actual = localtime(&s);
+                hora_actual->tm_hour = 6;
+                hora_actual->tm_min = 0;
+                
+                /* creo un hilo para que actualice el reloj */
+                pthread_t ptid;
+                pthread_create(&ptid, NULL, &updatetime, NULL);
+                
+                /* por si quieren ver como el hilo actualiza el reloj xDD */
+                while (1)
+                {
+                    printf("%d:%d:%d\n", hora_actual->tm_hour, hora_actual->tm_min, hora_actual->tm_sec);
+                    sleep(1);
                 }
             }
 
