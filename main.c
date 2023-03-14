@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 {
     char archivoCarga[MAX_NAME_FILE] = "./datos/carga.csv";
     char archivoServicio[MAX_NAME_FILE] = "./datos/servicio2019.txt";
-    t = 0.25;
+    t = 60;
     printf("cada segundo real son %f minutos simulados\n",segToSmin(t));
     if (comprobarEntrada(argc,argv,archivoCarga,archivoServicio,&t) != 1){
         return EXIT_FAILURE;
