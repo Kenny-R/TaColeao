@@ -108,7 +108,6 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     servicio_autobus *contenido = (servicio_autobus *)(nodoServicioActual->contenido);
     /* reviso si el proceso padre mando una señal al hijo */
     
-    char temp[100];
     while (1)
     {
         leerMensaje(pipeLectura, origen, destino, &hora, mensaje);
@@ -117,10 +116,10 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             /* actualizo */
             while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
             {
-                printf("%s %d:%d\n", infoRuta->cod, localtime(&contenido->hora)->tm_hour, localtime(&contenido->hora)->tm_min);
                 nodoServicioActual = nodoServicioActual->siguiente;
                 contenido = (servicio_autobus *)(nodoServicioActual->contenido);
             }
+            printf("%s tiene hora %d:%d\n", infoRuta->cod, localtime(&contenido->hora)->tm_hour, localtime(&contenido->hora)->tm_min);
             hora = hora + 60;
             if (nodoServicioActual->contenido == NULL)
                 break;
@@ -146,7 +145,8 @@ int main(int argc, char *argv[])
 {
     char archivoCarga[MAX_NAME_FILE] = "./datos/carga.csv";
     char archivoServicio[MAX_NAME_FILE] = "./datos/servicio2019.txt";
-    t = 1;
+    t = 0.25;
+    const tmin = (int)(t * 1000000);
 
     if (comprobarEntrada(argc,argv,archivoCarga,archivoServicio,&t) != 1){
         return EXIT_FAILURE;
@@ -216,9 +216,9 @@ int main(int argc, char *argv[])
                 {
                     int cnt = 0;
                     
-                    sleep(t);
+                    usleep(tmin);
                     hora_actual = hora_actual + 60;
-                    
+                    printf("el padre tiene hora %d:%d\n", localtime(&hora_actual)->tm_hour, localtime(&hora_actual)->tm_min);
                     for (j = 0; j < nroRutasRouteServices; j++)
                     {
                         if (!finalizado[j])
