@@ -117,7 +117,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             /* actualizo */
             while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora_actual) <= 0)
             {
-                printf("%s %d:%d\n", route_services[i]->cod, localtime(&contenido->hora)->tm_hour, localtime(&contenido->hora)->tm_min);
+                printf("%s %d:%d\n", infoRuta->cod, localtime(&contenido->hora)->tm_hour, localtime(&contenido->hora)->tm_min);
                 nodoServicioActual = nodoServicioActual->siguiente;
                 contenido = (servicio_autobus *)(nodoServicioActual->contenido);
             }
