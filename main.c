@@ -115,17 +115,17 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
         if (strcmp(mensaje, "Actualiza\n") == 0)
         {
             /* actualizo */
-            while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora_actual) <= 0)
+            while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
             {
                 printf("%s %d:%d\n", infoRuta->cod, localtime(&contenido->hora)->tm_hour, localtime(&contenido->hora)->tm_min);
                 nodoServicioActual = nodoServicioActual->siguiente;
                 contenido = (servicio_autobus *)(nodoServicioActual->contenido);
             }
-            hora_actual = hora_actual + 60;
+            hora = hora + 60;
             if (nodoServicioActual->contenido == NULL)
                 break;
             else
-                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora_actual, "NO HE TERMINADO\n");
+                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "NO HE TERMINADO\n");
             }
     }
 
@@ -136,7 +136,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     /* printf("Se elimino la ruta %s\n", infoRuta->cod); */
     
     /* le aviso al proceso padre de que termine */
-    enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora_actual, "Adios\n");
+    enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "Adios\n");
     printf("Adios %s\n", infoRuta->cod);
     close(*pipeLectura); /* cierro la parte de lectura del pipe de comunicacion */
     exit(0);
