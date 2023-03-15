@@ -165,15 +165,15 @@ int main(int argc, char *argv[])
 
     int i;
     /* pipe para comunicacion de proceso padre a cada hijo */
-    int fds[nroRutasRouteServices][2];
+    int pipesPadreHijo[nroRutasRouteServices][2];
     /* pipe para comunicacion de cada hijo al proceso padre */
-    int fds2[nroRutasRouteServices][2];
+    int pipesHijoPadre[nroRutasRouteServices][2];
     for (i = 0; i < nroRutasRouteServices; i++)
     {
-        pipe(fds[i]);
-        pipe(fds2[i]);
+        pipe(pipesPadreHijo[i]);
+        pipe(pipesHijoPadre[i]);
 
-        enviarMensaje(&fds2[i][1], route_services[i]->cod, "padre", &hora_actual, "NO HE TERMINADO\n");
+        enviarMensaje(&pipesHijoPadre[i][1], route_services[i]->cod, "padre", &hora_actual, "NO HE TERMINADO\n");
     }
 
     for (i = 0; i < nroRutasRouteServices; i++)
@@ -187,7 +187,9 @@ int main(int argc, char *argv[])
         }
         else if (ruta[i] == 0)
         { /*HIJO*/
-            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&fds[i][0], &fds2[i][1],t);
+            close(pipesHijoPadre[i][0]);
+            close(pipesPadreHijo[i][1]);
+            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&pipesPadreHijo[i][0], &pipesHijoPadre[i][1],t);
             exit(0);
         }
         else
@@ -204,21 +206,31 @@ int main(int argc, char *argv[])
                 int finalizado[nroRutasRouteServices];
                 memset(finalizado, 0, nroRutasRouteServices * sizeof(int));
 
+                /* cerramos los lados en los que no podriamos escribir*/
+                for (j=0; j< nroRutasRouteServices; j++) {
+                    close(pipesHijoPadre[j][1]);
+                    close(pipesPadreHijo[j][0]);
+                }
+
                 while (1)
                 {
                     int cnt = 0;
+                    
+                    sleep(t);
+                    hora_actual = hora_actual + 60;
+                    
                     for (j = 0; j < nroRutasRouteServices; j++)
                     {
                         if (!finalizado[j])
                         {
-                            leerMensaje(&fds2[j][0], origen, destino, &h, mensaje);
+                            leerMensaje(&pipesHijoPadre[j][0], origen, destino, &h, mensaje);
                             if (!strcmp(mensaje, "Adios\n"))
                             {
                                 finalizado[j] = 1;
                                 cnt++;
                             }
                             else
-                                enviarMensaje(&fds[j][1], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
+                                enviarMensaje(&pipesPadreHijo[j][1], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
                         }
                         else
                             cnt++;
@@ -226,33 +238,7 @@ int main(int argc, char *argv[])
                     if (cnt == nroRutasRouteServices)
                         break;
 
-                    hora_actual = hora_actual + 60;
-                    sleep(t);
                 }
-                
-                /*
-                for (j = 0; j < nroRutasRouteServices; j++)
-                {
-                    /*write(fds[j][1], "Empieza\n", 9);
-                    time_t horaDeEnvio = time(NULL);
-                    enviarMensaje(&fds[j][1],"padre",route_services[i]->cod,&horaDeEnvio,"empieza");
-                    close(fds[j][1]); /* cierro la parte de escritura del pipe 
-                } */
-                
-                /* inicializo el reloj a las 6:00 
-                hora_actual = strToTime("6:00");
-                
-                /* creo un hilo para que actualice el reloj 
-                pthread_t ptid;
-                pthread_create(&ptid, NULL, &updatetime, NULL);
-
-                while (!finalizar_reloj)
-                {
-                    imprimirHora(&hora_actual);       
-                    sleep(1);
-                }
-                */
-                
             }
         }
     }
