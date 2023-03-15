@@ -114,19 +114,24 @@ int verificarTiempo(int horas, int minutos) {
     Retorna:
         un time_t donde todos los datos son los por defecto menos las horas y los minutos
 */
-time_t strToTime(char *str) {
+time_t strToTime(char *str)
+{
     int horas, minutos;
-    sscanf(str,"%d:%d",&horas,&minutos);
-    if (verificarTiempo(horas,minutos) == 0) {
+    sscanf(str, "%d:%d", &horas, &minutos);
+    if (verificarTiempo(horas, minutos) == 0)
+    {
         printf("Error with the time\n");
         return;
     }
-    
-    struct tm d = {};
-    d.tm_hour = horas;
-    d.tm_min = minutos;
 
-    return mktime(&d);
+    time_t s;
+    time(&s);
+    struct tm *d;
+    d = localtime(&s);
+    d->tm_hour = horas;
+    d->tm_min = minutos;
+
+    return mktime(d);
 }
 
 /*
