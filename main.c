@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
                         enviarMensaje(&fds[j][1],"padre",route_services[j]->cod,&hora_actual,"Actualiza");
                     }
                     hora_actual = hora_actual + 60;
-                    sleep(t); /* sleep(t)*/
+                    usleep(t*1000000); /* sleep(t)*/
                 };
                 
                 /*
