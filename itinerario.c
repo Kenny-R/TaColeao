@@ -15,6 +15,7 @@ itinerario *crearItinerario(char *cod){
     itinerario *nuevoItinerario = malloc(sizeof(itinerario));
     nuevoItinerario->cod = malloc(MAX_CODE_LENGTH);
     strncpy(nuevoItinerario->cod,cod,MAX_CODE_LENGTH);
+    nuevoItinerario->numero_servicios = 0;
     nuevoItinerario ->servicios = crearListaEnlazada();
 
     return nuevoItinerario;
@@ -58,6 +59,7 @@ servicio_autobus *crearServicio(char *hora, int capacidad) {
 void agregarServicio(char *hora, int capacidad, itinerario *itinerario_parada) {
     servicio_autobus *nuevoServicio = crearServicio(hora,capacidad);
     anadirNodoAlFinal(nuevoServicio, itinerario_parada->servicios);
+    itinerario_parada->numero_servicios++;
 }
 
 /*
