@@ -6,6 +6,7 @@
     #include <time.h>
     typedef struct {
         char *cod;
+        int numero_servicios;
         nodo *servicios;
     } itinerario;
 
