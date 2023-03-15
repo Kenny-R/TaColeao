@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
         }
         else if (ruta[i] == 0)
         { /*HIJO*/
-            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&fds[i][0], &fds[i][1],t);
+            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&fds[i][0], &fds2[i][1],t);
             exit(0);
         }
         else
