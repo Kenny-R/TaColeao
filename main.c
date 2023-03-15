@@ -125,7 +125,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             if (nodoServicioActual->contenido == NULL)
                 break;
             else
-                enviarMensaje(pipeEscritura, route_services[i]->cod, "padre", &hora_actual, "NO HE TERMINADO\n");
+                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora_actual, "NO HE TERMINADO\n");
             }
     }
 
@@ -136,8 +136,8 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     /* printf("Se elimino la ruta %s\n", infoRuta->cod); */
     
     /* le aviso al proceso padre de que termine */
-    enviarMensaje(pipeEscritura, route_services[i]->cod, "padre", &hora_actual, "Adios\n");
-    printf("Adios %s\n", route_services[i]->cod);
+    enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora_actual, "Adios\n");
+    printf("Adios %s\n", infoRuta->cod);
     close(*pipeLectura); /* cierro la parte de lectura del pipe de comunicacion */
     exit(0);
 }
