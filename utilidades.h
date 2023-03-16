@@ -34,7 +34,7 @@
             Un numero mayor que 0 si todo fue bien. Un numero menor o igual a 0 si algo salio mal 
     */
     time_t strToTime(char *str);
-
+    
     /*
     Funcion que cuenta el numero de rutas mediante un archivo
         Argumentos:

@@ -284,7 +284,7 @@ t_carga ** leerCarga(char *carga, int *numeroRutas)  {
     
     /* Creamos un arreglo para las cargas */
     t_carga **loads=malloc(sizeof(t_carga*)*n);
-
+    
     /* Volvemos a leer desde el comienzo del archivo */
     rewind(load_file);
     /* Y construiremos el arreglo de las cargas */

@@ -2,11 +2,11 @@
     #define LISTA_ENLAZADA_LIB
     typedef struct NODO
     {
-        struct NODO * anterior;
+        struct NODO *anterior;
         
-        void * contenido;
+        void *contenido;
 
-        struct NODO * siguiente;
+        struct NODO *siguiente;
     } nodo;
 
     /*

@@ -45,7 +45,7 @@
             cantidad: La cantidad de individuos que componen al grupo
             carga: La carga donde se agregara el nuevo grupo
     */
-    void agregarGrupo(char *hora, int cantidad,t_carga *carga);
+    void agregarGrupo(char *hora, int cantidad, t_carga *carga);
 
     /*
         Dada una cantidad se intena reducir lo mas posible esta cantidad usando el primer grupo 
@@ -59,7 +59,7 @@
             se actualiza el contenido de cantidad)
     */
     time_t reducirCarga(int *cantidad, t_carga *carga);
-
+        
     /*
         dada una carga libera la memoria utilizada por esta carga
         Argumentos:
@@ -79,5 +79,5 @@
             la direccion de la carga con el codigo solicitado, o null si 
             no se encontro la carga.
     */
-    t_carga * buscarCarga(char *cod, t_carga **arr, int len);
+    t_carga *buscarCarga(char *cod, t_carga **arr, int len);
 #endif
