@@ -200,7 +200,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                 avances[servicios_arrancados].ida = 1;
                 avances[servicios_arrancados].pos = servicios_arrancados;
                 avances[servicios_arrancados].tiempoRecorr = infCarga->recorr;
-                pthread_create(&idhilos[servicios_arrancados], NULL, &autobus, NULL);
+                pthread_create(&idhilos[servicios_arrancados], NULL, &autobus, (void *)(avances + servicios_arrancados));
                 
                 /* itero al siguiente nodo de la lista enlazada de servicios */
                 nodoServicioActual = nodoServicioActual->siguiente;
