@@ -156,7 +156,7 @@ void *autobus(void *dataAvance)
         }
     }
 
-    miAvance->servicios_activos--;
+    *(miAvance->servicios_terminados) = *(miAvance->servicios_terminados) + 1;
     pthread_exit(NULL);
 }
 
@@ -178,7 +178,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     */
     int numero_servicios = infoRuta->numero_servicios;
     int servicios_arrancados = 0;
-    int activos = 0;
+    int terminados = 0;
     /* arreglo de los id de los hilos */
     pthread_t idhilos[numero_servicios];
     /* un arreglo tipo struct avance, para pasarle de argumento a la funcion de los hilos */
@@ -204,12 +204,12 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             hora = hora + 60;
             for (k = 0; k < numero_servicios; k++)
                 go[k] = 1;
+            printf("%d:%d servicios terminados de %s: %d\n", localtime(&hora)->tm_hour, localtime(&hora)->tm_min, infoRuta->cod, terminados);
             if (nodoServicioActual->contenido != NULL)
             {
                 while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
                 {
                     /* creacion de hilo */
-                    activos = activos + 1;
                     avances[servicios_arrancados].ida = 1;
                     avances[servicios_arrancados].pos = servicios_arrancados;
                     avances[servicios_arrancados].arrPorcentajes = porcentajes;
@@ -217,7 +217,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                     avances[servicios_arrancados].horaActual = hora;
                     avances[servicios_arrancados].tiempoRecorr = infCarga->recorr;
                     avances[servicios_arrancados].go = go;
-                    avances[servicios_arrancados].servicios_activos = activos;
+                    avances[servicios_arrancados].servicios_terminados = &terminados;
                     pthread_create(&idhilos[servicios_arrancados], NULL, &autobus, (void *)(avances + servicios_arrancados));
 
                     /* itero al siguiente nodo de la lista enlazada de servicios */
@@ -228,22 +228,10 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             }
             else
             {
-                if (servicios_arrancados == numero_servicios) {
-                    int cnt = 0;
-                    for (k = 0; k < numero_servicios; k++)
-                    {
-                        if (avances[k].ida == 2)
-                            cnt++;
-                        else
-                            break;
-                    }
-                    if (cnt == numero_servicios)
-                        break;
+                if (terminados == numero_servicios)
+                {
+                    break;
                 }
-            }
-            for (k = 0; k < servicios_arrancados; k++)
-            {
-                printf("El autobus %d en direccion %d de %s a la hora %d:%d lleva un porcentaje de %d\n", k, avances[k].ida, infoRuta->cod, localtime(&hora)->tm_hour, localtime(&hora)->tm_min, porcentajes[k]);
             }
             enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "NO HE TERMINADO\n");
         }
