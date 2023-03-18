@@ -20,7 +20,7 @@
         time_t horaActual; /* hora actual de la simulacion */
         time_t horaPartida; /* hora en que parte el autobus hacia la parada */
         int *go; /* un arreglo que indica si es el momento en que el hilo actualice su estado */
-        int servicios_activos; /* numero de servicios activos */
+        int *servicios_terminados; /* numero de servicios terminados */
     };
     
     /* 
