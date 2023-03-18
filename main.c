@@ -108,49 +108,55 @@ void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mens
 /* Funcion del hilo */
 void *autobus(void *dataAvance)
 {
-    /* datos del avance del autobus */
     struct avance *miAvance = (struct avance *)dataAvance;
     int i = miAvance->pos;
     int *porcentaje = miAvance->arrPorcentajes;
     time_t recorr = miAvance->tiempoRecorr;
+    time_t horaPartida = miAvance->horaPartida;
     time_t hora = miAvance->horaActual;
 
-    int inicio = 0;
-    int minRecorr = (localtime(&recorr)->tm_hour) * 60 + localtime(&recorr)->tm_min;
+    /* calculemos cuantos minutos han pasado desde que el autobus partio hacia la parada */
+    int inicio = difftime(hora, horaPartida) / 60;
+    /* y calculemos cuantos minutos tarda en el recorrido */
+    int minRecorr = ((localtime(&recorr)->tm_hour) * 60 + localtime(&recorr)->tm_min);
 
     while (1)
     {
-        /* semaforo */
-
-        /* seccion critica */
-        porcentaje[i] = (inicio * 100) / minRecorr;
-        printf("porcentaje del autobus: %d\n", porcentaje[i]);
-        /* si llega a la parada */
-        if (porcentaje[i] == 100)
+        /* el hilo espera a que el proceso hijo le indique que actualice */
+        if (miAvance->go[i] == 1)
         {
-            inicio = 0;
-            if (miAvance->ida == 1)
+            /* seccion critica */
+            porcentaje[i] = (inicio * 100) / minRecorr;
+            /* si llega a la parada */
+            if (porcentaje[i] >= 100)
             {
-                /* esperar 10t */
-                minRecorr = 10;
-                miAvance->ida = -1;
+                inicio = 0;
+                if (miAvance->ida == 1)
+                {
+                    /* esperar 10t */
+                    minRecorr = 10;
+                    miAvance->ida = -1;
+                }
+                else if (miAvance->ida == -1)
+                {
+                    /* ya se termino los 10t */
+                    minRecorr = localtime(&recorr)->tm_hour * 60 + localtime(&recorr)->tm_min;
+                    miAvance->ida = 0;
+                }
+                else if (miAvance->ida == 0)
+                {
+                    /* el autobus regreso a la uni */
+                    miAvance->ida = 2;
+                    break;
+                }
             }
-            else if (miAvance->ida == -1)
-            {
-                /* ya se termino los 10t */
-                minRecorr = 10;
-                miAvance->ida = 0;
-            }
-            else if (miAvance->ida == 0)
-            {
-                /* el autobus llego a la uni */
-                break;
-            }
+            inicio++;
+            /* libero el semaforo */
+            miAvance->go[i]--;
         }
-        inicio++;
-        /* liberar semaforo */
     }
 
+    miAvance->servicios_activos--;
     pthread_exit(NULL);
 }
 
@@ -171,58 +177,75 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     }
     */
     int numero_servicios = infoRuta->numero_servicios;
+    int servicios_arrancados = 0;
+    int activos = 0;
     /* arreglo de los id de los hilos */
     pthread_t idhilos[numero_servicios];
-    int servicios_arrancados = 0;
-    /* arreglo para saber el porcentaje en que van los autobuses */
-    int porcentajes[numero_servicios];
     /* un arreglo tipo struct avance, para pasarle de argumento a la funcion de los hilos */
-    struct avance avances[numero_servicios];    
+    struct avance *avances = (struct avance *)malloc(numero_servicios * sizeof(struct avance));  
+    /* arreglo para saber el porcentaje en que van los autobuses */
+    int porcentajes[numero_servicios]; 
+    /* un arreglo que indicara si el autobus tiene que actualizarse o no */
+    int go[numero_servicios];
 
     nodo *nodoServicioActual = infoRuta->servicios->siguiente;
     servicio_autobus *contenido = (servicio_autobus *)(nodoServicioActual->contenido);
     /* reviso si el proceso padre mando una señal al hijo */
-   
+    
+    int k;
     while (TRUE)
 
     {
-        if (nodoServicioActual->contenido != NULL)
-            leerMensaje(pipeLectura, origen, destino, &hora, mensaje);
+        leerMensaje(pipeLectura, origen, destino, &hora, mensaje);
 
         if (strcmp(mensaje, "Actualiza\n") == 0)
         {
             /* actualizo */
-            while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
-            {
-                /* creacion de hilo */
-                avances[servicios_arrancados].arrPorcentajes = porcentajes;
-                avances[servicios_arrancados].horaActual = contenido->hora;
-                avances[servicios_arrancados].ida = 1;
-                avances[servicios_arrancados].pos = servicios_arrancados;
-                avances[servicios_arrancados].tiempoRecorr = infCarga->recorr;
-                pthread_create(&idhilos[servicios_arrancados], NULL, &autobus, (void *)(avances + servicios_arrancados));
-                
-                /* itero al siguiente nodo de la lista enlazada de servicios */
-                nodoServicioActual = nodoServicioActual->siguiente;
-                contenido = (servicio_autobus *)(nodoServicioActual->contenido);
-                servicios_arrancados++;
-            }
-            
-            /* chequeo el porcentaje de los autobuses que ya arrancaron */
-            int k;
-            for (k = 0; k < servicios_arrancados; k++)
-            {
-                printf("el autobus %d de %s lleva %d de porcentaje\n", k, infoRuta->cod, porcentajes[k]);
-            }
-
-            printf("%s tiene hora %d:%d\n", infoRuta->cod, localtime(&hora)->tm_hour, localtime(&hora)->tm_min);
             hora = hora + 60;
-            if (nodoServicioActual->contenido == NULL)
-                break;
+            for (k = 0; k < numero_servicios; k++)
+                go[k] = 1;
+            if (nodoServicioActual->contenido != NULL)
+            {
+                while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
+                {
+                    /* creacion de hilo */
+                    activos = activos + 1;
+                    avances[servicios_arrancados].ida = 1;
+                    avances[servicios_arrancados].pos = servicios_arrancados;
+                    avances[servicios_arrancados].arrPorcentajes = porcentajes;
+                    avances[servicios_arrancados].horaPartida = contenido->hora;
+                    avances[servicios_arrancados].horaActual = hora;
+                    avances[servicios_arrancados].tiempoRecorr = infCarga->recorr;
+                    avances[servicios_arrancados].go = go;
+                    avances[servicios_arrancados].servicios_activos = activos;
+                    pthread_create(&idhilos[servicios_arrancados], NULL, &autobus, (void *)(avances + servicios_arrancados));
+
+                    /* itero al siguiente nodo de la lista enlazada de servicios */
+                    nodoServicioActual = nodoServicioActual->siguiente;
+                    contenido = (servicio_autobus *)(nodoServicioActual->contenido);
+                    servicios_arrancados++;
+                }
+            }
             else
             {
-                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "NO HE TERMINADO\n");
+                if (servicios_arrancados == numero_servicios) {
+                    int cnt = 0;
+                    for (k = 0; k < numero_servicios; k++)
+                    {
+                        if (avances[k].ida == 2)
+                            cnt++;
+                        else
+                            break;
+                    }
+                    if (cnt == numero_servicios)
+                        break;
+                }
             }
+            for (k = 0; k < servicios_arrancados; k++)
+            {
+                printf("El autobus %d en direccion %d de %s a la hora %d:%d lleva un porcentaje de %d\n", k, avances[k].ida, infoRuta->cod, localtime(&hora)->tm_hour, localtime(&hora)->tm_min, porcentajes[k]);
+            }
+            enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "NO HE TERMINADO\n");
         }
     }
     int i;
