@@ -9,6 +9,19 @@
     #define MAX_LOAD_NAME_LENGTH 30
     #define MAX_TRAVEL_TIME_LENGTH 6
     #define MAX_CODE_LENGTH 4
+
+    /* Para pasarle como argumento a la funcion de los hilos */
+    struct avance
+    {
+        int *arrPorcentajes; /* un arreglo que indica el porcentaje de los autobuses */
+        int ida; /* 1 indica que el autobus va de la uni->parada, 0 si indica que va de parada->uni, -1 indica que esta subiendo los pasajeros y 2 si ya termino */
+        int pos; /* posicion del servicio dentro del arreglo porcentajes  */
+        time_t tiempoRecorr; /* tiempo de recorrido del autobus */ 
+        time_t horaActual; /* hora actual de la simulacion */
+        time_t horaPartida; /* hora en que parte el autobus hacia la parada */
+        int *go; /* un arreglo que indica si es el momento en que el hilo actualice su estado */
+        int servicios_activos; /* numero de servicios activos */
+    };
     
     /* 
         Comprueba los datos de entrada si todo fue correcto un numero distinto mayor a 0 si algo fallo devuelve un numero menor
