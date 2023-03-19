@@ -373,12 +373,14 @@ int main(int argc, char *argv[])
                                 finalizado[j] = 1;
                                 cnt++;
                             }
-                            else if (mensaje[0] == 'I')
-                            {
-                                printf("#################\nhora: %d:%d\nParada: %s\nestado: %s\n##################\n", localtime(&hora_actual)->tm_hour, localtime(&hora_actual)->tm_min, route_services[j]->cod, mensaje);
-                            }
 
+                            
                             enviarMensaje(&pipesPadreHijo[j][WRITE_END], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
+                            
+                            if (mensaje[0] == 'I')
+                            {
+                                 imprimirMsg(route_services[j]->cod, mensaje);
+                            }
                         }
                         else
                             cnt++;

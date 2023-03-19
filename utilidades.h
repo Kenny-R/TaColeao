@@ -111,5 +111,6 @@
 
     char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPersonasEnEspera, int serviciosArrancados, int largoTotal);
 
+    void imprimirMsg(char codParada[], char msg[]);
 
 #endif

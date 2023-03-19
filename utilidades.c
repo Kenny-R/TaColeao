@@ -418,3 +418,43 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
     strcat(resultado, "\n");
     return resultado;
 }
+
+void imprimirMsg(char codParada[], char msg[]) {
+    int i = 2;
+    int j;
+    int cont = 0;
+    char prog;
+
+    printf("%s: ", codParada);
+    while (msg[i] != ',')
+    {
+        printf("%c", msg[i++]);
+    }
+    i++;
+    while (1)
+    {
+        prog = msg[i++];
+        cont = 0;
+        while (msg[i] != ',' && msg[i] != '\n')
+        {
+            cont *= 10;
+            cont += msg[i++] - '0';
+        }
+        
+        printf(" [");
+        for (j = 0; j < cont; j++)
+        {
+            printf("%c", prog);
+        }
+
+        for (j = cont; j < 10; j++)
+        {
+            printf(" ");
+        }
+        
+        printf("]");
+        
+        if (msg[i++] == '\n') break;
+    }
+    printf("\nEl mensaje es: %s",msg);
+}
