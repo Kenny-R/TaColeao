@@ -15,7 +15,7 @@
 #define MAX_ORIGEN_LENGTH 10
 #define MAX_DESTINO_LENGTH 10
 #define MAX_HORA_LENGTH 6
-#define MAX_MENSAJE_LENGTH 30
+#define MAX_MENSAJE_LENGTH 101
 
 #define READ_END 0
 #define WRITE_END 1
@@ -25,7 +25,7 @@
 #define MSG_ACTUALIZA 2
 
 #ifndef TRUE
-#define TRUE (1==1)
+#define TRUE (1 == 1)
 #define FALSE (!TRUE)
 #endif
 
@@ -52,10 +52,11 @@ void enviarMensaje(int *fd, char origen[], char destino[], time_t *hora, char me
 {
 
     if (strlen(origen) > MAX_ORIGEN_LENGTH ||
-        strlen(destino) > MAX_DESTINO_LENGTH||
-        strlen(mensaje) > MAX_MENSAJE_LENGTH) {
-            printf("No se puede enviar un mensaje tan grande\n");
-            return;
+        strlen(destino) > MAX_DESTINO_LENGTH ||
+        strlen(mensaje) > MAX_MENSAJE_LENGTH)
+    {
+        printf("No se puede enviar un mensaje tan grande\n");
+        return;
     }
 
     /*Creamos el str de la hora*/
@@ -83,9 +84,10 @@ void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mens
 {
     /*leemos la primera parte del mensaje hasta que encontremos un "|" */
     char c[2];
-    char largo[sizeof(int)*8+1] = "";
-    while (TRUE) {
-        read(*fd,c,1);
+    char largo[sizeof(int) * 8 + 1] = "";
+    while (TRUE)
+    {
+        read(*fd, c, 1);
         c[1] = '\0';
         if (c[0] != '|')
         {
@@ -166,8 +168,8 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     char destino[MAX_DESTINO_LENGTH];
     time_t hora;
     char mensaje[MAX_MENSAJE_LENGTH];
-  
-    /* reviso si puedo empezar 
+
+    /* reviso si puedo empezar
     while (TRUE)
     {
         /* printf("Estoy esperando para comenzar %s \n", infoRuta->cod);
@@ -179,19 +181,24 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     int numero_servicios = infoRuta->numero_servicios;
     int servicios_arrancados = 0;
     int terminados = 0;
+
     /* arreglo de los id de los hilos */
     pthread_t idhilos[numero_servicios];
+
     /* un arreglo tipo struct avance, para pasarle de argumento a la funcion de los hilos */
-    struct avance *avances = (struct avance *)malloc(numero_servicios * sizeof(struct avance));  
+    struct avance *avances = (struct avance *)malloc(numero_servicios * sizeof(struct avance));
+
     /* arreglo para saber el porcentaje en que van los autobuses */
-    int porcentajes[numero_servicios]; 
+    int porcentajes[numero_servicios];
+    memset(porcentajes, 0, numero_servicios * sizeof(int));
+
     /* un arreglo que indicara si el autobus tiene que actualizarse o no */
     int go[numero_servicios];
 
     nodo *nodoServicioActual = infoRuta->servicios->siguiente;
     servicio_autobus *contenido = (servicio_autobus *)(nodoServicioActual->contenido);
     /* reviso si el proceso padre mando una señal al hijo */
-    
+
     int k;
     while (TRUE)
 
@@ -233,7 +240,19 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                     break;
                 }
             }
-            enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "NO HE TERMINADO\n");
+            if (servicios_arrancados >= 1)
+            {
+                /* Enviamos la informacion del estado*/
+                enviarMensaje(pipeEscritura,
+                              infoRuta->cod,
+                              "padre",
+                              &hora,
+                              codficarInformacion(avances, infCarga->cod, numeroDePersonasEnEspera(infCarga, hora), servicios_arrancados, MAX_MENSAJE_LENGTH));
+            }
+            else
+            {
+                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "No he terminado\n");
+            }
         }
     }
     int i;
@@ -248,7 +267,6 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     /* sleep(1); */
     /* printf("Se elimino la ruta %s\n", infoRuta->cod); */
 
-
     /* le aviso al proceso padre de que termine */
     printf("Se va a despedir %s\n", infoRuta->cod);
     enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "Adios\n");
@@ -262,7 +280,7 @@ int main(int argc, char *argv[])
     char archivoCarga[MAX_NAME_FILE] = "./datos/carga.csv";
     char archivoServicio[MAX_NAME_FILE] = "./datos/servicio2019.txt";
 
-    if (comprobarEntrada(argc,argv,archivoCarga,archivoServicio,&t) != 1)
+    if (comprobarEntrada(argc, argv, archivoCarga, archivoServicio, &t) != 1)
         return EXIT_FAILURE;
 
     const tmin = (int)(t * 1000000);
@@ -271,7 +289,7 @@ int main(int argc, char *argv[])
     {
         return EXIT_FAILURE;
     }
-   
+
     hora_actual = strToTime("6:00");
     printf("hora actual: ");
     imprimirHora(&hora_actual);
@@ -280,7 +298,7 @@ int main(int argc, char *argv[])
     loads = leerCarga(archivoCarga, &nroRutasLoads);
     route_services = leerServicio(archivoServicio, &nroRutasRouteServices);
 
-    printf("nro:%d\n",nroRutasRouteServices);
+    printf("nro:%d\n", nroRutasRouteServices);
     /* pid de los procesos (es decir, de las paradas de los autobuses) */
     pid_t ruta[nroRutasRouteServices];
 
@@ -290,7 +308,7 @@ int main(int argc, char *argv[])
 
     /* pipe para comunicacion de cada hijo al proceso padre */
     int pipesHijoPadre[nroRutasRouteServices][2];
-    
+
     for (i = 0; i < nroRutasRouteServices; i++)
     {
         pipe(pipesPadreHijo[i]);
@@ -312,7 +330,7 @@ int main(int argc, char *argv[])
         { /*HIJO*/
             close(pipesHijoPadre[i][READ_END]);
             close(pipesPadreHijo[i][WRITE_END]);
-            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads),&pipesPadreHijo[i][READ_END], &pipesHijoPadre[i][WRITE_END],t);
+            controlRuta(route_services[i], buscarCarga(route_services[i]->cod, loads, nroRutasLoads), &pipesPadreHijo[i][READ_END], &pipesHijoPadre[i][WRITE_END], t);
             exit(0);
         }
         else
@@ -322,7 +340,7 @@ int main(int argc, char *argv[])
                 char origen[6], destino[6], mensaje[30];
                 time_t h;
                 int j;
-                
+
                 printf("Padre avisando a todos los procesos hijos \n");
                 /* arreglo para saber si un proceso hijo termino o no: 0 si no ha terminado y 1 si ha terminado */
                 int finalizado[nroRutasRouteServices];
@@ -330,7 +348,8 @@ int main(int argc, char *argv[])
 
                 /* cerramos los lados en los que no podriamos escribir*/
 
-                for (j=0; j< nroRutasRouteServices; j++) {
+                for (j = 0; j < nroRutasRouteServices; j++)
+                {
                     close(pipesHijoPadre[j][WRITE_END]);
                     close(pipesPadreHijo[j][READ_END]);
                 }
@@ -340,7 +359,7 @@ int main(int argc, char *argv[])
                     int cnt = 0;
                     usleep(tmin);
                     hora_actual = hora_actual + 60;
-                    printf("el padre tiene hora %d:%d\n", localtime(&hora_actual)->tm_hour, localtime(&hora_actual)->tm_min);
+                    /* printf("el padre tiene hora %d:%d\n", localtime(&hora_actual)->tm_hour, localtime(&hora_actual)->tm_min); */
 
                     for (j = 0; j < nroRutasRouteServices; j++)
                     {
@@ -354,8 +373,12 @@ int main(int argc, char *argv[])
                                 finalizado[j] = 1;
                                 cnt++;
                             }
-                            else
-                                enviarMensaje(&pipesPadreHijo[j][WRITE_END], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
+                            else if (mensaje[0] == 'I')
+                            {
+                                printf("#################\nhora: %d:%d\nParada: %s\nestado: %s\n##################\n", localtime(&hora_actual)->tm_hour, localtime(&hora_actual)->tm_min, route_services[j]->cod, mensaje);
+                            }
+
+                            enviarMensaje(&pipesPadreHijo[j][WRITE_END], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
                         }
                         else
                             cnt++;
@@ -393,7 +416,8 @@ int main(int argc, char *argv[])
     printf("Proceso padre: LET IT GOOOO! XDD \n");
     /*Los hijos no llegan a esta zona*/
     /*esperamos que terminen todos los hijos*/
-    for (i = 0; i < nroRutasRouteServices; wait(&ruta[i++]));
+    for (i = 0; i < nroRutasRouteServices; wait(&ruta[i++]))
+        ;
 
     return EXIT_SUCCESS;
 }
