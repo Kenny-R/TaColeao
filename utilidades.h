@@ -107,4 +107,9 @@
 
     double segToSmin(double t);
 
+    int numeroDePersonasEnEspera(t_carga *infoCarga, time_t hora);
+
+    char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPersonasEnEspera, int serviciosArrancados, int largoTotal);
+
+
 #endif
