@@ -398,10 +398,16 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
     sprintf(buffer, "%d", nroPersonasEnEspera);
     strcat(resultado, buffer);
     int i = 0;
+    int hayProgreso =0;
+
     for (; i < serviciosArrancados; i++)
     {
+        if(arrAvances[i].ida == -2)
+            continue;
+
         if (arrAvances[i].ida != 2)
         {
+            hayProgreso = 1;
             strcat(resultado, ",");
             if (arrAvances[i].ida == 1)
             {
@@ -419,15 +425,32 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
             {
                 strcat(resultado, ">10");
             }
+        } else {
+            hayProgreso = 1;
+            strcat(resultado, ",<10");
+            arrAvances[i].ida = -2;
+
         }
     }
+    
     strcat(resultado, "\n");
+    if(hayProgreso == 0)
+        return "ta vacio we\n";
     return resultado;
 }
 
 void imprimirMsg(char codParada[], char msg[]) {
+    int j = 2;
+    int msgValido = 0;
+
+    while (msg[j] != '\0') {
+        if (msg[j++] == ',') {
+            msgValido = 1;
+            break;
+        }    
+    
+    }
     int i = 2;
-    int j;
     int cont = 0;
     char prog;
 
@@ -462,5 +485,5 @@ void imprimirMsg(char codParada[], char msg[]) {
         
         if (msg[i++] == '\n') break;
     }
-    printf("\nEl mensaje es: %s",msg);
+    printf("\n");
 }

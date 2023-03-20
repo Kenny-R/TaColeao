@@ -164,6 +164,7 @@ void *autobus(void *dataAvance)
     }
 
     *(miAvance->servicios_terminados) = *(miAvance->servicios_terminados) + 1;
+    miAvance->go[i] = -1;
     pthread_exit(NULL);
 }
 
@@ -199,11 +200,14 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
 
     /* un arreglo que indicara si el autobus tiene que actualizarse o no */
     int go[numero_servicios];
+    int posSemaforo;
+    for (posSemaforo = 0; posSemaforo<numero_servicios;posSemaforo++){
+        go[posSemaforo] = 0;
+    }
 
     nodo *nodoServicioActual = infoRuta->servicios->siguiente;
     servicio_autobus *contenido = (servicio_autobus *)(nodoServicioActual->contenido);
     /* reviso si el proceso padre mando una señal al hijo */
-
     int k;
     while (TRUE)
 
@@ -215,8 +219,11 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             /* actualizo */
             hora = hora + 60;
             for (k = 0; k < numero_servicios; k++)
-                go[k] = 1;
-            printf("%d:%d servicios terminados de %s: %d\n", localtime(&hora)->tm_hour, localtime(&hora)->tm_min, infoRuta->cod, terminados);
+                if(go[k] == 0)
+                {
+                    go[k] = 1;
+                }
+            /* printf("%d:%d servicios terminados de %s: %d\n", localtime(&hora)->tm_hour, localtime(&hora)->tm_min, infoRuta->cod, terminados); */
             if (nodoServicioActual->contenido != NULL)
             {
                 while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
@@ -238,30 +245,33 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                     servicios_arrancados++;
                 }
             }
-            else
-            {
-                if (terminados == numero_servicios)
-                {
-                    break;
-                }
-            }
             if (servicios_arrancados >= 1)
             {
                 /* Antes de enviar la informacion del estado tenemos que  esperar que  todos los autobuses se actualicen*/
                 int i = 0;
                 while (i!=servicios_arrancados)
-                {
-                    if(go[i]== 0)
+                {   
+                    if(go[i] == 0 || go[i] == -1)
                         i ++;
                 }
                 
 
                 /* Enviamos la informacion del estado*/
+                strcpy(mensaje, codficarInformacion(avances, infCarga->cod, numeroDePersonasEnEspera(infCarga, hora), servicios_arrancados, MAX_MENSAJE_LENGTH));
+                /* printf("envie el mensaje: %s",mensaje); */
+                
+                if (terminados == numero_servicios)
+                    mensaje[0] = 'F';
                 enviarMensaje(pipeEscritura,
                               infoRuta->cod,
                               "padre",
                               &hora,
-                              codficarInformacion(avances, infCarga->cod, numeroDePersonasEnEspera(infCarga, hora), servicios_arrancados, MAX_MENSAJE_LENGTH));
+                              mensaje);
+            
+                if (terminados == numero_servicios)
+                {
+                    break;
+                }
             }
             else
             {
@@ -275,16 +285,10 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
         pthread_join(idhilos[i], NULL);
     }
 
-    /* printf("Empezando %s \n", infoRuta->cod);   */
-    /* printf("Se creo la ruta %s\n", infoRuta->cod);
-    printf("trabajando....\n"); */
-    /* sleep(1); */
-    /* printf("Se elimino la ruta %s\n", infoRuta->cod); */
-
     /* le aviso al proceso padre de que termine */
-    printf("Se va a despedir %s\n", infoRuta->cod);
+    /* printf("Se va a despedir %s\n", infoRuta->cod); */
     enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "Adios\n");
-    printf("Adios %s\n", infoRuta->cod);
+    /* printf("Adios %s\n", infoRuta->cod); */
     close(*pipeLectura); /* cierro la parte de lectura del pipe de comunicacion */
     exit(0);
 }
@@ -304,7 +308,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    hora_actual = strToTime("6:00");
+    hora_actual = strToTime("4:00");
     printf("hora actual: ");
     imprimirHora(&hora_actual);
 
@@ -312,7 +316,6 @@ int main(int argc, char *argv[])
     loads = leerCarga(archivoCarga, &nroRutasLoads);
     route_services = leerServicio(archivoServicio, &nroRutasRouteServices);
 
-    printf("nro:%d\n", nroRutasRouteServices);
     /* pid de los procesos (es decir, de las paradas de los autobuses) */
     pid_t ruta[nroRutasRouteServices];
 
@@ -355,7 +358,7 @@ int main(int argc, char *argv[])
                 time_t h;
                 int j;
 
-                printf("Padre avisando a todos los procesos hijos \n");
+                printf("Iniciamos la simulacion \n");
                 /* arreglo para saber si un proceso hijo termino o no: 0 si no ha terminado y 1 si ha terminado */
                 int finalizado[nroRutasRouteServices];
                 memset(finalizado, 0, nroRutasRouteServices * sizeof(int));
@@ -374,26 +377,28 @@ int main(int argc, char *argv[])
                     usleep(tmin);
                     hora_actual = hora_actual + 60;
                     /* printf("el padre tiene hora %d:%d\n", localtime(&hora_actual)->tm_hour, localtime(&hora_actual)->tm_min); */
-
+                    printf("Hora Actual: ");
+                    imprimirHora(&hora_actual);
                     for (j = 0; j < nroRutasRouteServices; j++)
                     {
                         if (!finalizado[j])
                         {
                             leerMensaje(&pipesHijoPadre[j][READ_END], origen, destino, &h, mensaje);
-                            if (!strcmp(mensaje, "Adios\n"))
+                            if (mensaje[0] == 'F')
                             {
-                                printf("parada %d ha finalizado\n", i);
+                                imprimirMsg(route_services[j]->cod, mensaje);
+                                printf("parada de %s ha finalizado\n", route_services[j]->cod);
                                 fflush(stdout);
                                 finalizado[j] = 1;
                                 cnt++;
                             }
 
-                            
-                            enviarMensaje(&pipesPadreHijo[j][WRITE_END], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
+                            if (finalizado != 0)
+                                enviarMensaje(&pipesPadreHijo[j][WRITE_END], "padre", route_services[j]->cod, &hora_actual, "Actualiza\n");
                             
                             if (mensaje[0] == 'I')
                             {
-                                 imprimirMsg(route_services[j]->cod, mensaje);
+                                imprimirMsg(route_services[j]->cod, mensaje);
                             }
                         }
                         else
