@@ -128,31 +128,36 @@ void *autobus(void *dataAvance)
         if (miAvance->go[i] == 1)
         {
             /* seccion critica */
-            porcentaje[i] = (inicio * 100) / minRecorr;
-            /* si llega a la parada */
-            if (porcentaje[i] >= 100)
+            if (miAvance->ida != -1)
             {
-                inicio = 0;
-                if (miAvance->ida == 1)
+                porcentaje[i] = (inicio * 100) / minRecorr;
+                inicio++;
+                if (porcentaje[i] >= 100)
                 {
-                    /* esperar 10t */
-                    minRecorr = 10;
-                    miAvance->ida = -1;
-                }
-                else if (miAvance->ida == -1)
-                {
-                    /* ya se termino los 10t */
-                    minRecorr = localtime(&recorr)->tm_hour * 60 + localtime(&recorr)->tm_min;
-                    miAvance->ida = 0;
-                }
-                else if (miAvance->ida == 0)
-                {
-                    /* el autobus regreso a la uni */
-                    miAvance->ida = 2;
-                    break;
+                    inicio = 0;
+                    if (miAvance->ida == 1)
+                    {
+                        /* esperar 10t */
+                        miAvance->ida = -1;
+                    }
+                    else if (miAvance->ida == 0)
+                    {
+                        /* el autobus regreso a la uni */
+                        miAvance->ida = 2;
+                        break;
+                    }
                 }
             }
-            inicio++;
+            else
+            {
+                inicio++;
+                if (inicio == 11)
+                {
+                    inicio = 1;
+                    porcentaje[i] = (inicio * 100) / minRecorr;
+                    miAvance->ida = 0;
+                }
+            }
             /* libero el semaforo */
             miAvance->go[i]--;
         }
