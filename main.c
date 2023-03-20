@@ -242,6 +242,15 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             }
             if (servicios_arrancados >= 1)
             {
+                /* Antes de enviar la informacion del estado tenemos que  esperar que  todos los autobuses se actualicen*/
+                int i = 0;
+                while (i!=servicios_arrancados)
+                {
+                    if(go[i]== 0)
+                        i ++;
+                }
+                
+
                 /* Enviamos la informacion del estado*/
                 enviarMensaje(pipeEscritura,
                               infoRuta->cod,
