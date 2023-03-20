@@ -406,13 +406,19 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
             if (arrAvances[i].ida == 1)
             {
                 strcat(resultado, ">");
+                sprintf(buffer, "%d", (arrAvances[i].arrPorcentajes[arrAvances[i].pos]) / 10);
+                strcat(resultado, buffer);
+            }
+            else if (arrAvances[i].ida == 0)
+            {
+                strcat(resultado, "<");
+                sprintf(buffer, "%d", (arrAvances[i].arrPorcentajes[arrAvances[i].pos]) / 10);
+                strcat(resultado, buffer);
             }
             else
             {
-                strcat(resultado, "<");
+                strcat(resultado, ">10");
             }
-            sprintf(buffer, "%d", (arrAvances[i].arrPorcentajes[arrAvances[i].pos]) / 10);
-            strcat(resultado, buffer);
         }
     }
     strcat(resultado, "\n");
