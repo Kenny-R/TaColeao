@@ -13,6 +13,8 @@
     /* Para pasarle como argumento a la funcion de los hilos */
     struct avance
     {
+        int *asientos;             /* asientos disponibles en el autobus */
+        t_carga *cargaParada;      /* lista de las cargas de la parada */
         int *arrPorcentajes; /* un arreglo que indica el porcentaje de los autobuses */
         int ida; /* 1 indica que el autobus va de la uni->parada, 0 si indica que va de parada->uni, -1 indica que esta subiendo los pasajeros y 2 si ya termino */
         int pos; /* posicion del servicio dentro del arreglo porcentajes  */
