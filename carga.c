@@ -67,29 +67,36 @@ void agregarGrupo(char *hora, int cantidad,t_carga *carga) {
     Argumentos:
         cantidad: la direccion donde se encuentra la cantidad que se quiere intentar reducir
         carga: Carga donde se reducira la cantidad 
+        hora_actual: la hora actual de la simulacion
     Retorna:
         un time_t con la hora del grupo que se uso para reducir la cantidad solicitada (no 
         necesariamente se reduce toda la cantidad que se requiere puede reducirse menos pero
         se actualiza el contenido de cantidad)
 */
-time_t reducirCarga(int *cantidad, t_carga *carga) {
+time_t reducirCarga(int *cantidad, t_carga *carga, time_t hora_actual)
+{
     t_grupo *contenido;
     contenido = (t_grupo *)(carga->grupos->siguiente->contenido);
-    time_t tiempo = contenido->hora;
-        
     if (contenido == NULL)
         return;
+    time_t tiempo = contenido->hora;
+    if (tiempo <= hora_actual)
+    {
 
-    if((contenido->cantidad - *cantidad) <= 0) {/*la cantidad solicitada es mayor a la cantidad de persona en espera*/
-        *cantidad = *cantidad - contenido->cantidad;
-        eliminarNodo(carga->grupos->siguiente);
-        
-    } else if ((contenido->cantidad - *cantidad) > 0) {
-        contenido->cantidad = contenido->cantidad - *cantidad;
-        *cantidad = 0;
+        if ((contenido->cantidad - *cantidad) <= 0)
+        { /*la cantidad solicitada es mayor a la cantidad de persona en espera*/
+            *cantidad = *cantidad - contenido->cantidad;
+            eliminarNodo(carga->grupos->siguiente);
+        }
+        else if ((contenido->cantidad - *cantidad) > 0)
+        {
+            contenido->cantidad = contenido->cantidad - *cantidad;
+            *cantidad = 0;
+        }
     }
     return tiempo;
 }
+
 
 /*
     dada una carga libera la memoria utilizada por esta carga
