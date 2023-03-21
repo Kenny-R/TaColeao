@@ -150,13 +150,14 @@ void *autobus(void *dataAvance)
             }
             else
             {
-                inicio++;
-                if (inicio == 11)
+                reducirCarga(miAvance->asientos, miAvance->cargaParada, hora);
+                if (inicio == 10)
                 {
                     inicio = 1;
                     porcentaje[i] = (inicio * 100) / minRecorr;
                     miAvance->ida = 0;
                 }
+                inicio++;
             }
             /* libero el semaforo */
             miAvance->go[i]--;
@@ -229,6 +230,8 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                 while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
                 {
                     /* creacion de hilo */
+                    avances[servicios_arrancados].asientos = &contenido->capacidad;
+                    avances[servicios_arrancados].cargaParada = infCarga;
                     avances[servicios_arrancados].ida = 1;
                     avances[servicios_arrancados].pos = servicios_arrancados;
                     avances[servicios_arrancados].arrPorcentajes = porcentajes;
