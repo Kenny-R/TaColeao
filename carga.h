@@ -53,6 +53,7 @@
         Argumentos:
             cantidad: la direccion donde se encuentra la cantidad que se quiere intentar reducir
             carga: Carga donde se reducira la cantidad 
+            hora_actual: la hora actual de la simulacion
         Retorna:
             un time_t con la hora del grupo que se uso para reducir la cantidad solicitada (no 
             necesariamente se reduce toda la cantidad que se requiere puede reducirse menos pero
