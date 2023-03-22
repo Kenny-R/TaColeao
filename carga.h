@@ -59,7 +59,7 @@
             necesariamente se reduce toda la cantidad que se requiere puede reducirse menos pero
             se actualiza el contenido de cantidad)
     */
-    time_t reducirCarga(int *cantidad, t_carga *carga, time_t hora);
+    time_t reducirCarga(int *cantidad, t_carga *carga, time_t hora_actual);
         
     /*
         dada una carga libera la memoria utilizada por esta carga
