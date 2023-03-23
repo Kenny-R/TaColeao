@@ -142,22 +142,10 @@ time_t strToTime(char *str)
     time_t s;
     time(&s);
     struct tm *d;
-    d = localtime(&s); /* aja aqui ve este puede ser tu "problema" */
-
-    /* ese time y local time lo que hace es tomar la hora y fecha actual de tu pc
-    por lo que aja hay una diferencia en segundos. Por que si te fijas abajo 
-    solo modificamos la hora y los minutos los segundos no los tocamos, por lo que 
-    si por ejemplo el autobus sale a las 6:00 en nuesto reloj serian las 6 horas 0 minutos 
-    y algo en los segundos que no sabemos cuanto es, si lo ves?
-    
-    yo creo que es por eso que te da un pelo de error 
-    Y cual seria la solucion? porque en los casos bordes falla
-    */
-
+    d = localtime(&s); 
     d->tm_hour = horas;
     d->tm_min = minutos;
     d->tm_sec = 0;
- /* revisa los casos bordes que mencinas a ver si eso es y si no, me jodiste XD */
     return mktime(d);
 }
 
@@ -275,6 +263,11 @@ void build_services(int n, FILE *fp, itinerario *arr[])
             /* Leemos la hora en que sale el autobus y su capacidad */
             /*(Tiene el mismo tamaño que un travel time)*/
             char *string_hora = calloc(MAX_TRAVEL_TIME_LENGTH, sizeof(char));
+            if (string_hora == NULL)
+            {
+                printf("No hay suficiente memoria disponible\n");
+                exit(1);
+            }
             while (isdigit(c) || c == ':')
             {
                 strncat(string_hora, &c, 1);
@@ -282,6 +275,7 @@ void build_services(int n, FILE *fp, itinerario *arr[])
             }
             fscanf(fp, "%d", &capacity);
             agregarServicio(string_hora, capacity, new_itinerary);
+            free(string_hora);
         }
         else if (c == '\n')
         {
