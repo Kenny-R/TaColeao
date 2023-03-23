@@ -168,7 +168,7 @@ int get_number_routes(FILE *fp)
         {
             n++;
             c = getc(fp);
-            if (!isalpha(c)) {
+            if (c == '\n' || c == EOF) {
                 hay_linea_vacia = 1;
                 break;
             }
