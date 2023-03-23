@@ -123,7 +123,7 @@
             fd: file descriptor para el pipe de escritura
             origen: un string que indica quien es el que escribe el mensaje
             destino: un string que indica a quien se le va a enviar el mensaje
-            *hora: un apuntador a la hora en que se envia el mensaje
+            hora: un apuntador a la hora en que se envia el mensaje
             mensaje: el texto que se va a enviar por el pipe
     */
     void enviarMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[]);
@@ -131,10 +131,10 @@
     /*
         Lee un mensaje a traves de un pipe
         Argumentos:
-            *fd: file descriptor para el pipe de lectura
+            fd: file descriptor para el pipe de lectura
             origen: un string que indica quien es el que escribió el mensaje
             destino: un string que indica para quien fue el mensaje
-            *hora: un apuntador a la hora en que se envió el mensaje
+            hora: un apuntador a la hora en que se envió el mensaje
             mensaje: el texto que se envió por el pipe
     */
     void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[]);
@@ -142,7 +142,7 @@
     /*
         Dado un struct t_carga y la hora en time_t, va a calcular la cantidad de personas esperando en una ruta
         Argumento:
-            *infoCarga: un apuntador a la carga de una ruta
+            infoCarga: un apuntador a la carga de una ruta
             hora: hora actual de la simulacion
         Retorna:
             el numero de personas esperando en la ruta
@@ -156,8 +156,8 @@
         signo_i puede ser < o > dependiendo de la dirección del autobús y 
         avance_i es el porcentaje de avance (del 0% al 100%).
         Argumento:
-            *arrAvances: un apuntador a un arreglo de struct avance
-            *nombreRuta: un string que contiene el nombre de la ruta
+            arrAvances: un apuntador a un arreglo de struct avance
+            nombreRuta: un string que contiene el nombre de la ruta
             nroPersonasEnEspera: el numero de personas esperando en la ruta
             serviciosArrancados: cantidad de autobuses que se encuentra activos
             largoTotal: largo del mensaje
