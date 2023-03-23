@@ -25,6 +25,7 @@ t_carga *crearCarga(char *cod, char *name, char *tiempoRecorr){
     strcpy(nuevaCarga->name,name);
 
     nuevaCarga -> recorr = strToTime(tiempoRecorr);
+    nuevaCarga -> pasajeros = 0;
     nuevaCarga -> grupos = crearListaEnlazada();
 
     return nuevaCarga;
@@ -73,8 +74,9 @@ void agregarGrupo(char *hora, int cantidad,t_carga *carga) {
         necesariamente se reduce toda la cantidad que se requiere puede reducirse menos pero
         se actualiza el contenido de cantidad)
 */
-time_t reducirCarga(int *cantidad, t_carga *carga, time_t hora_actual)
-{
+time_t reducirCarga(int *cantidad, int *nroPuntuales, int espera, int recorr, t_carga *carga, time_t hora_actual)
+{   
+    int reduc = 0;
     t_grupo *contenido;
     contenido = (t_grupo *)(carga->grupos->siguiente->contenido);
     if (contenido == NULL)
@@ -82,17 +84,22 @@ time_t reducirCarga(int *cantidad, t_carga *carga, time_t hora_actual)
     time_t tiempo = contenido->hora;
     if (tiempo <= hora_actual)
     {
-
         if ((contenido->cantidad - *cantidad) <= 0)
         { /*la cantidad solicitada es mayor a la cantidad de persona en espera*/
-            *cantidad = *cantidad - contenido->cantidad;
+            reduc += contenido->cantidad;
+            *cantidad = *cantidad - reduc;
             eliminarNodo(carga->grupos->siguiente);
         }
         else if ((contenido->cantidad - *cantidad) > 0)
         {
+            reduc += *cantidad;
             contenido->cantidad = contenido->cantidad - *cantidad;
             *cantidad = 0;
         }
+
+        if (reduc && difftime(hora_actual, tiempo) + recorr*60 + espera*60 <= 5460)  
+            *nroPuntuales += reduc;
+
     }
     return tiempo;
 }

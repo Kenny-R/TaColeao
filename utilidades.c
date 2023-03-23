@@ -142,10 +142,22 @@ time_t strToTime(char *str)
     time_t s;
     time(&s);
     struct tm *d;
-    d = localtime(&s);
+    d = localtime(&s); /* aja aqui ve este puede ser tu "problema" */
+
+    /* ese time y local time lo que hace es tomar la hora y fecha actual de tu pc
+    por lo que aja hay una diferencia en segundos. Por que si te fijas abajo 
+    solo modificamos la hora y los minutos los segundos no los tocamos, por lo que 
+    si por ejemplo el autobus sale a las 6:00 en nuesto reloj serian las 6 horas 0 minutos 
+    y algo en los segundos que no sabemos cuanto es, si lo ves?
+    
+    yo creo que es por eso que te da un pelo de error 
+    Y cual seria la solucion? porque en los casos bordes falla
+    */
+
     d->tm_hour = horas;
     d->tm_min = minutos;
-
+    d->tm_sec = 0;
+ /* revisa los casos bordes que mencinas a ver si eso es y si no, me jodiste XD */
     return mktime(d);
 }
 
@@ -208,6 +220,9 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
         agregarGrupo("12:00", g[6], new_load);
         agregarGrupo("13:00", g[7], new_load);
 
+        new_load->pasajeros += (g[0] + g[1] + g[2] + g[3] + g[4] + g[5] + g[6] + g[7]);
+        
+        
         /* Agregamos esta nueva carga al arreglo */
         arr[i] = new_load;
 
