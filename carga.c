@@ -67,6 +67,11 @@ void agregarGrupo(char *hora, int cantidad,t_carga *carga) {
     de la cola de la carga
     Argumentos:
         cantidad: la direccion donde se encuentra la cantidad que se quiere intentar reducir
+        nroPuntuales: la dirección donde se encuentra el número de personas que han llegado
+                    puntual hasta los momentos
+        espera: entero que representa el tiempo en minutos que aun queda por esperar para que
+                el autobús empiece su recorrido hacia la USB
+        recorr: entero que representa el tiempo en minutos del recorrido del autobús
         carga: Carga donde se reducira la cantidad 
         hora_actual: la hora actual de la simulacion
     Retorna:
@@ -97,6 +102,7 @@ time_t reducirCarga(int *cantidad, int *nroPuntuales, int espera, int recorr, t_
             *cantidad = 0;
         }
 
+        /* se determina si la carga reducida llegará temprano, y si es así se suma al número de personas que llegaron temprano */
         if (reduc && difftime(hora_actual, tiempo) + recorr*60 + espera*60 <= 5460)  
             *nroPuntuales += reduc;
 

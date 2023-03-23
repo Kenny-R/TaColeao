@@ -113,6 +113,20 @@
 
     char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPersonasEnEspera, int serviciosArrancados, int largoTotal);
 
+    /*
+        Función que decodifica e imprime dado un mensaje de 
+        actualización de estado codificado dado el formato 
+        "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde 
+        nP es el número de personas esperando en una parada,
+        signo_i puede ser < o > dependiendo de la dirección 
+        del autobús y avance_i es el porcentaje de avance 
+        (del 0% al 100%).
+        Argumentos:
+            codParada: arreglo de caracteres que contiene el 
+            código de la parada.
+            msg: arreglo de caracteres que contiene el mensaje
+            de actualización de estado codificado.
+    */
     void imprimirMsg(char codParada[], char msg[]);
 
 #endif

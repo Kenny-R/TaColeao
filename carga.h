@@ -12,8 +12,8 @@
     typedef struct {
         char *cod;
         char *name;
-        time_t recorr;
         int pasajeros;
+        time_t recorr;
         nodo *grupos;
     } t_carga;
 
@@ -53,6 +53,11 @@
         de la cola de la carga
         Argumentos:
             cantidad: la direccion donde se encuentra la cantidad que se quiere intentar reducir
+            nroPuntuales: la dirección donde se encuentra el número de personas que han llegado
+                        puntual hasta los momentos
+            espera: entero que representa el tiempo en minutos que aun queda por esperar para que
+                    el autobús empiece su recorrido hacia la USB
+            recorr: entero que representa el tiempo en minutos del recorrido del autobús
             carga: Carga donde se reducira la cantidad 
             hora_actual: la hora actual de la simulacion
         Retorna:

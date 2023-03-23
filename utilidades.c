@@ -220,6 +220,7 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
         agregarGrupo("12:00", g[6], new_load);
         agregarGrupo("13:00", g[7], new_load);
 
+        /* agregamos la cantidad total de pasajeros de la ruta */
         new_load->pasajeros += (g[0] + g[1] + g[2] + g[3] + g[4] + g[5] + g[6] + g[7]);
         
         
@@ -454,37 +455,59 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
     return resultado;
 }
 
+/*
+    Función que decodifica e imprime dado un mensaje de 
+    actualización de estado codificado dado el formato 
+    "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde 
+    nP es el número de personas esperando en una parada,
+    signo_i puede ser < o > dependiendo de la dirección 
+    del autobús y avance_i es el porcentaje de avance 
+    (del 0% al 100%).
+    Argumentos:
+        codParada: arreglo de caracteres que contiene el 
+        código de la parada.
+        msg: arreglo de caracteres que contiene el mensaje
+        de actualización de estado codificado.
+ */
 void imprimirMsg(char codParada[], char msg[]) {
     int j = 2;
     int msgValido = 0;
 
+    /* se asegura que el mensaje es válido */
     while (msg[j] != '\0') {
         if (msg[j++] == ',') {
             msgValido = 1;
             break;
         }    
-    
     }
+
     int i = 2;
     int cont = 0;
     char prog;
 
+    /* se imprime el código de la parada y el número de personas que esperan */
     printf("%s: ", codParada);
     while (msg[i] != ',')
     {
         printf("%c", msg[i++]);
     }
+
     i++;
+
+    /* se decodifica e imprime el progreso de cada autobús activo de la parada */
     while (1)
     {
+        /* se guarda el signo > o < */
         prog = msg[i++];
         cont = 0;
+        /* se determina el porcentaje de avance al leer los caracteres correspondientes */
         while (msg[i] != ',' && msg[i] != '\n')
         {
             cont *= 10;
             cont += msg[i++] - '0';
         }
         
+        /* impresión del porcentaje */
         printf(" [");
         for (j = 0; j < cont; j++)
         {
@@ -498,6 +521,7 @@ void imprimirMsg(char codParada[], char msg[]) {
         
         printf("]");
         
+        /* se determina si ya terminó el mensaje */
         if (msg[i++] == '\n') break;
     }
     printf("\n");
