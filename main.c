@@ -153,7 +153,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
         if (strcmp(mensaje, "Actualiza\n") == 0)
         {
             /* actualizo */
-            for (k = 0; k < numero_servicios; k++)
+            for (k = terminados; k < numero_servicios; k++)
                 if(go[k] == 0)
                     go[k] = 1;
             
