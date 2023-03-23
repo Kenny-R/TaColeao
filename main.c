@@ -12,22 +12,8 @@
 #include "carga.h"
 #include "itinerario.h"
 
-#define MAX_ORIGEN_LENGTH 10
-#define MAX_DESTINO_LENGTH 10
-#define MAX_HORA_LENGTH 6
-#define MAX_MENSAJE_LENGTH 101
-
 #define READ_END 0
 #define WRITE_END 1
-
-#define MSG_ADIOS 0
-#define MSG_CONTINUE 1
-#define MSG_ACTUALIZA 2
-
-#ifndef TRUE
-#define TRUE (1 == 1)
-#define FALSE (!TRUE)
-#endif
 
 /* Seccion de codigo compartida por todos*/
 int nroRutasLoads, nroRutasRouteServices;
@@ -38,76 +24,13 @@ int finalizar_reloj = 0;
 int nroPuntuales = 0;
 double t = 0.25;
 
-void *updatetime(void *arg)
-{
-    while (!finalizar_reloj)
-    {
-        hora_actual = hora_actual + 60;
-        sleep(1);
-    }
-    pthread_exit(NULL);
-}
-
-void enviarMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[])
-{
-
-    if (strlen(origen) > MAX_ORIGEN_LENGTH ||
-        strlen(destino) > MAX_DESTINO_LENGTH ||
-        strlen(mensaje) > MAX_MENSAJE_LENGTH)
-    {
-        printf("No se puede enviar un mensaje tan grande\n");
-        return;
-    }
-
-    /*Creamos el str de la hora*/
-    char time[6];
-    strftime(time, 6, "%H:%M", localtime(hora));
-
-    /*calculamos parte del tamaño del mensaje*/
-    int n = strlen(origen) + 1 + strlen(destino) + 1 + strlen(time) + 1 + strlen(mensaje) + 1;
-
-    /*tansfromamos el entro n en un string*/
-    char largo[sizeof(int) * 8 + 1];
-    sprintf(largo, "%d", n);
-
-    /*Calculamos el tamaño total del mensaje*/
-    int m = n + strlen(largo) + 1;
-
-    /*creamos el mensaje final*/
-    char mensajeFinal[m];
-    sprintf(mensajeFinal, "%d|%s|%s|%s|%s", n, origen, destino, time, mensaje);
-    /*Enviamos el mensaje*/
-    write(*fd, mensajeFinal, m);
-}
-
-void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[])
-{
-    /*leemos la primera parte del mensaje hasta que encontremos un "|" */
-    char c[2];
-    char largo[sizeof(int) * 8 + 1] = "";
-    while (TRUE)
-    {
-        read(*fd, c, 1);
-        c[1] = '\0';
-        if (c[0] != '|')
-        {
-            strcat(largo, c);
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    int n = atoi(largo);
-    char contenido[n];
-    read(*fd, contenido, n);
-    char time[6];
-    sscanf(contenido, "%[^|]|%[^|]|%[^|]|%[^|]", origen, destino, time, mensaje);
-    *hora = strToTime(time);
-}
-
-/* Funcion del hilo */
+/*
+    Funcion del hilo (autobus)
+    Actualiza el estado de porcentaje de ida (si el autobus va de uni a parada) y de regreso (si va de parada a uni)
+    Argumentos:
+        dataAvance:  el apuntador de una funcion que luego vamos a convertirlo en un struct "avance"
+                    donde contiene los datos necesarios para que el hilo pueda actualizar por sí mismo su estado
+*/
 void *autobus(void *dataAvance)
 {
     struct avance *miAvance = (struct avance *)dataAvance;
@@ -174,6 +97,17 @@ void *autobus(void *dataAvance)
     pthread_exit(NULL);
 }
 
+/*
+    Funcion de los procesos hijos (rutas)
+    Espera a que el proceso padre le mande una señal para indicarle a que actualicen los hilos, que se van a crear
+    segun la hora actual de la simulacion
+    Argumentos:
+        infoRuta: un apuntador de un struct itinerario que sirve para poder acceder a la lista de servicios de
+                  una determinada ruta
+        infCarga: un apuntador de un struct t_carga que contiene los datos de las cargas de una determinada ruta
+        pipeLectura: un apuntador del pipe por donde va a leer el mensaje que le envía el proceso padre
+        pipeEscritura: un apuntador del pipe por donde se va a escribir el mensaje al proceso padre
+*/
 void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int *pipeEscritura, int t)
 {
     char origen[MAX_ORIGEN_LENGTH];
@@ -190,6 +124,11 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
 
     /* un arreglo tipo struct avance, para pasarle de argumento a la funcion de los hilos */
     struct avance *avances = (struct avance *)malloc(numero_servicios * sizeof(struct avance));
+    if (avances == NULL)
+    {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
 
     /* arreglo para saber el porcentaje en que van los autobuses */
     int porcentajes[numero_servicios];
@@ -205,7 +144,7 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     nodo *nodoServicioActual = infoRuta->servicios->siguiente;
     servicio_autobus *contenido = (servicio_autobus *)(nodoServicioActual->contenido);
     /* reviso si el proceso padre mando una señal al hijo */
-    int k;
+    int k, tmp = 0;
     while (TRUE)
 
     {
@@ -216,12 +155,8 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
             /* actualizo */
             for (k = 0; k < numero_servicios; k++)
                 if(go[k] == 0)
-                {
                     go[k] = 1;
-                }
             
-            
-            /* printf("%d:%d servicios terminados de %s: %d\n", localtime(&hora)->tm_hour, localtime(&hora)->tm_min, infoRuta->cod, terminados); */
             if (nodoServicioActual->contenido != NULL)
             {
                 while (nodoServicioActual->contenido != NULL && difftime(contenido->hora, hora) <= 0)
@@ -245,17 +180,15 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                     servicios_arrancados++;
                 }
             }
-            if (servicios_arrancados >= 1)
-            {
+            if (servicios_arrancados == 0)
+                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "No he terminado\n");
+            else {
                 /* Antes de enviar la informacion del estado tenemos que  esperar que  todos los autobuses se actualicen*/
                 int i = 0;
-                while (i!=servicios_arrancados)
-                {   
-                    if(go[i] == 0 || go[i] == -1)
-                        i ++;
-                }
+                while (i != servicios_arrancados)
+                    if (go[i] == 0 || go[i] == -1)
+                        i++;
                 
-
                 /* Enviamos la informacion del estado*/
                 strcpy(mensaje, codficarInformacion(avances, infCarga->cod, numeroDePersonasEnEspera(infCarga, hora), servicios_arrancados, MAX_MENSAJE_LENGTH));
                 /* printf("envie el mensaje: %s",mensaje); */
@@ -267,26 +200,21 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
                               "padre",
                               &hora,
                               mensaje);
-            
-                if (terminados == numero_servicios)
+                
+                /* verifiquemos si hay un autobus que terminó su viaje, hacemos un join de los hilos que ya han terminado */
+                while (tmp != terminados)
                 {
-                    break;
+                    pthread_join(idhilos[tmp], NULL);
+                    tmp++;
                 }
-            }
-            else
-            {
-                enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, "NO HE TERMINADO\n");
+            
+                /* si ya todos los autobuses terminaron su viaje y ya regresaron a la uni, hacemos un break */
+                if (terminados == numero_servicios)
+                    break;
             }
         }
     }
-    int i;
-    for (i = 0; i < numero_servicios; i++)
-    {
-        pthread_join(idhilos[i], NULL);
-    }
-
     /* le aviso al proceso padre de que termine */
-
     char buffer[sizeof(int) * 8 + 1];
     memset(mensaje,0,MAX_MENSAJE_LENGTH);
     strcat(mensaje,"A,");
@@ -302,7 +230,10 @@ void controlRuta(itinerario *infoRuta, t_carga *infCarga, int *pipeLectura, int 
     printf("Número de personas que llegaron tarde en %s: %d\n", infoRuta->cod, infCarga->pasajeros -nroPuntuales); */
     enviarMensaje(pipeEscritura, infoRuta->cod, "padre", &hora, mensaje);
 
-    close(*pipeLectura); /* cierro la parte de lectura del pipe de comunicacion */
+    /* cierro la parte de lectura del pipe de comunicacion */
+    close(*pipeLectura); 
+    /* libero la memoria malloc */
+    free(avances);
     exit(0);
 }
 
@@ -318,9 +249,7 @@ int main(int argc, char *argv[])
     const tmin = (int)(t * 1000000);
 
     if (comprobarEntrada(argc, argv, archivoCarga, archivoServicio, &t) != 1)
-    {
         return EXIT_FAILURE;
-    }
     
     char origen[MAX_ORIGEN_LENGTH], destino[MAX_DESTINO_LENGTH], mensaje[MAX_MENSAJE_LENGTH];
     time_t h;
@@ -357,7 +286,7 @@ int main(int argc, char *argv[])
         if (ruta[i] == -1)
         { /*No se pudo crear el nuevo proceso*/
             printf("Ha habido un error en la creacion de un proceso\n");
-            exit(-1);
+            exit(1);
             break;
         }
         else if (ruta[i] == 0)
