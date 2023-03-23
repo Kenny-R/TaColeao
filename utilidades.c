@@ -159,24 +159,24 @@ Retorna:
 int get_number_routes(FILE *fp)
 {
     int n = 0;
-    /* El numero de lineas del archivo indica el numero de rutas restandole menos 1 por la primera fila del archivo */
+    /* El numero de lineas del archivo indica el numero de rutas */
     char c = getc(fp);
+    int hay_linea_vacia = 0;
     while (c != EOF)
     {
         if (c == '\n')
         {
             n++;
             c = getc(fp);
-            if (!isalpha(c))
+            if (!isalpha(c)) {
+                hay_linea_vacia = 1;
                 break;
+            }
         }
         c = getc(fp);
     }
     
-    /* si el ultimo caracter que revisamos en el loop no es el final del archivo,
-    significa que hemos pasado por la linea del break por tanto le restamos uno a la cantidad de lineas
-    ya que esta linea puede ser una linea vacia */
-    if (c != EOF)
+    if (hay_linea_vacia == 1)
         n--;
 
     return n;
