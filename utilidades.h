@@ -4,11 +4,21 @@
     #include "carga.h"
     #include "itinerario.h"
     
+    /* macros */
     #define UTILIDADES_LIB
     #define MAX_NAME_FILE 30 /*El tamaño maximo de un nombre de archivo*/
     #define MAX_LOAD_NAME_LENGTH 30
     #define MAX_TRAVEL_TIME_LENGTH 6
     #define MAX_CODE_LENGTH 4
+    #define MAX_ORIGEN_LENGTH 10
+    #define MAX_DESTINO_LENGTH 10
+    #define MAX_HORA_LENGTH 6
+    #define MAX_MENSAJE_LENGTH 101
+
+    #ifndef TRUE
+    #define TRUE (1 == 1)
+    #define FALSE (!TRUE)
+    #endif
 
     /* Para pasarle como argumento a la funcion de los hilos */
     struct avance
