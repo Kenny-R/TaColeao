@@ -164,7 +164,7 @@ time_t strToTime(char *str)
 /*
  Funcion que cuenta el numero de rutas mediante un archivo
  Argumentos:
-    *fp: un apuntador a un archivo
+    fp: un apuntador a un archivo
 Retorna:
     n: numero de rutas
  */
@@ -176,10 +176,20 @@ int get_number_routes(FILE *fp)
     while (c != EOF)
     {
         if (c == '\n')
+        {
             n++;
+            c = getc(fp);
+            if (!isalpha(c))
+                break;
+        }
         c = getc(fp);
     }
-    n--;
+    
+    /* si el ultimo caracter que revisamos en el loop no es el final del archivo,
+    significa que hemos pasado por la linea del break por tanto le restamos uno a la cantidad de lineas
+    ya que esta linea puede ser una linea vacia */
+    if (c != EOF)
+        n--;
 
     return n;
 }
@@ -223,7 +233,6 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
         /* agregamos la cantidad total de pasajeros de la ruta */
         new_load->pasajeros += (g[0] + g[1] + g[2] + g[3] + g[4] + g[5] + g[6] + g[7]);
         
-        
         /* Agregamos esta nueva carga al arreglo */
         arr[i] = new_load;
 
@@ -233,6 +242,7 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
             getc(fp);
         }
     }
+    return;
 }
 
 /*
@@ -278,11 +288,14 @@ void build_services(int n, FILE *fp, itinerario *arr[])
             /* guardemos el nuevo itinerario en el arreglo de routes_service */
             arr[i] = new_itinerary;
             i++;
+            if (i == n)
+                break;
         }
         c = getc(fp);
     }
     /* nos falta guardar el ultimo nuevo itinerario en el arreglo */
     arr[i] = new_itinerary;
+    return;
 }
 
 /*
