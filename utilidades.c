@@ -379,11 +379,94 @@ void imprimirHora(time_t *hora)
     printf("%s\n", time);
 }
 
-double segToSmin(double t)
+/*
+    Envia un mensaje a traves de un pipe
+    Argumentos:
+        fd: file descriptor para el pipe de escritura
+        origen: un string que indica quien es el que escribe el mensaje
+        destino: un string que indica a quien se le va a enviar el mensaje
+        hora: la hora en que se envia el mensaje
+        mensaje: el texto que se va a enviar por el pipe
+*/
+void enviarMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[])
 {
-    return (1 / t);
+
+    if (strlen(origen) > MAX_ORIGEN_LENGTH ||
+        strlen(destino) > MAX_DESTINO_LENGTH ||
+        strlen(mensaje) > MAX_MENSAJE_LENGTH)
+    {
+        printf("No se puede enviar un mensaje tan grande\n");
+        return;
+    }
+
+    /*Creamos el str de la hora*/
+    char time[6];
+    strftime(time, 6, "%H:%M", localtime(hora));
+
+    /*calculamos parte del tamaño del mensaje*/
+    int n = strlen(origen) + 1 + strlen(destino) + 1 + strlen(time) + 1 + strlen(mensaje) + 1;
+
+    /*tansfromamos el entro n en un string*/
+    char largo[sizeof(int) * 8 + 1];
+    sprintf(largo, "%d", n);
+
+    /*Calculamos el tamaño total del mensaje*/
+    int m = n + strlen(largo) + 1;
+
+    /*creamos el mensaje final*/
+    char mensajeFinal[m];
+    sprintf(mensajeFinal, "%d|%s|%s|%s|%s", n, origen, destino, time, mensaje);
+    /*Enviamos el mensaje*/
+    write(*fd, mensajeFinal, m);
 }
 
+/*
+    Lee un mensaje a traves de un pipe
+    Argumentos:
+        fd: file descriptor para el pipe de lectura
+        origen: un string que indica quien es el que escribió el mensaje
+        destino: un string que indica para quien fue el mensaje
+        hora: la hora en que se envió el mensaje
+        mensaje: el texto que se envió por el pipe
+*/
+void leerMensaje(int *fd, char origen[], char destino[], time_t *hora, char mensaje[])
+{
+    /*leemos la primera parte del mensaje hasta que encontremos un "|" */
+    /* esto es para encontrar el largo del mensaje */
+    char c[2];
+    char largo[sizeof(int) * 8 + 1] = "";
+    while (TRUE)
+    {
+        read(*fd, c, 1);
+        c[1] = '\0';
+        if (c[0] != '|')
+        {
+            strcat(largo, c);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    /* convertirmos el string en un entero */
+    int n = atoi(largo);
+    /* leemos el mensaje con la funcion read */
+    char contenido[n];
+    read(*fd, contenido, n);
+    char time[6];
+    sscanf(contenido, "%[^|]|%[^|]|%[^|]|%[^|]", origen, destino, time, mensaje);
+    *hora = strToTime(time);
+}
+
+/*
+    Dado un struct t_carga y la hora en time_t, va a calcular la cantidad de personas esperando en una ruta
+    Argumento:
+        infoCarga: un apuntador a la carga de una ruta
+        hora: hora actual de la simulacion
+    Retorna:
+        el numero de personas esperando en la ruta
+*/
 int numeroDePersonasEnEspera(t_carga *infoCarga, time_t hora)
 {
     nodo *nodoActual = infoCarga->grupos->siguiente;
@@ -406,6 +489,21 @@ int numeroDePersonasEnEspera(t_carga *infoCarga, time_t hora)
     return nro;
 }
 
+/*
+    Codifica el mensaje que se va a enviar a traves del pipe a un formato:
+    "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde 
+    nP es el número de personas esperando en una parada,
+    signo_i puede ser < o > dependiendo de la dirección del autobús y 
+    avance_i es el porcentaje de avance (del 0% al 100%).
+    Argumento:
+        arrAvances: un apuntador a un arreglo de struct avance
+        nombreRuta: un string que contiene el nombre de la ruta
+        nroPersonasEnEspera: el numero de personas esperando en la ruta
+        serviciosArrancados: cantidad de autobuses que se encuentra activos
+        largoTotal: largo del mensaje
+    Retorna:
+        el mensaje codificado
+*/
 char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPersonasEnEspera, int serviciosArrancados, int largoTotal)
 {
     char *resultado = calloc(largoTotal, sizeof(char));
@@ -456,19 +554,15 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
 }
 
 /*
-    Función que decodifica e imprime dado un mensaje de 
-    actualización de estado codificado dado el formato 
+    Función que decodifica e imprime dado un mensaje de actualización de estado codificado dado el formato:
     "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde 
     nP es el número de personas esperando en una parada,
-    signo_i puede ser < o > dependiendo de la dirección 
-    del autobús y avance_i es el porcentaje de avance 
-    (del 0% al 100%).
+    signo_i puede ser < o > dependiendo de la dirección del autobús y 
+    avance_i es el porcentaje de avance (del 0% al 100%).
     Argumentos:
-        codParada: arreglo de caracteres que contiene el 
-        código de la parada.
-        msg: arreglo de caracteres que contiene el mensaje
-        de actualización de estado codificado.
- */
+        codParada: arreglo de caracteres que contiene el código de la parada.
+        msg: arreglo de caracteres que contiene el mensaje de actualización de estado codificado.
+*/
 void imprimirMsg(char codParada[], char msg[]) {
     int j = 2;
     int msgValido = 0;
