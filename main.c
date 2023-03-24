@@ -242,14 +242,11 @@ int main(int argc, char *argv[])
 {
     char archivoCarga[MAX_NAME_FILE] = "./datos/carga.csv";
     char archivoServicio[MAX_NAME_FILE] = "./datos/servicio2019.txt";
-
+    
     if (comprobarEntrada(argc, argv, archivoCarga, archivoServicio, &t) != 1)
         return EXIT_FAILURE;
-
+            
     const tmin = (int)(t * 1000000);
-
-    if (comprobarEntrada(argc, argv, archivoCarga, archivoServicio, &t) != 1)
-        return EXIT_FAILURE;
     
     char origen[MAX_ORIGEN_LENGTH], destino[MAX_DESTINO_LENGTH], mensaje[MAX_MENSAJE_LENGTH];
     time_t h;

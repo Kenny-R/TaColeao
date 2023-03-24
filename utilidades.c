@@ -34,12 +34,12 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
         printf("Error with the arguments\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
         return -1;
     }
-
     if ((temp = fopen(argv[2], "r")) == NULL)
     {
         printf("Error with the argument -s \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[2], argv[0]);
         return -1;
     }
+    
     fclose(temp);
     memset(nameS, 0, MAX_NAME_FILE);
     strcpy(nameS, argv[2]);

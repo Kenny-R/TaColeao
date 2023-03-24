@@ -39,7 +39,6 @@ itinerario *crearItinerario(char *cod){
 void eliminarItinerario(itinerario *itinerario_a_eliminar) {
     eliminarLista(itinerario_a_eliminar->servicios);
     free(itinerario_a_eliminar->cod);
-    free(itinerario_a_eliminar);
 }
 
 /*
