@@ -367,6 +367,25 @@ int main(int argc, char *argv[])
             printf("Parada %s\nLlegaron a tiempo: %d\nLlegaron tarde: %d\n",route_services[i]->cod,aTiempo,tarde);
         }
     }
+    
+    int j;
+    for (i = 0; i < nroRutasLoads; i++)
+    {
+        int encontrado = 0;
+        for (j = 0; j < nroRutasRouteServices; j++)
+        {
+            if (strcmp(loads[i]->cod, route_services[j]->cod) == 0)
+            {
+                encontrado = 1;
+                break;
+            }
+        }
+        if (!encontrado)
+        {
+            printf("Parada %s\nLlegaron a tiempo: %d\nLlegaron tarde: %d\n", loads[i]->cod, 0, loads[i]->pasajeros);
+        }
+    }
+    
     printf("Termino la simulacion.\n");
     
     for (i = 0; i<nroRutasRouteServices; i++) {
