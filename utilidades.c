@@ -24,22 +24,22 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
     /*comprobamos que la entrada tenga mas de 1 argumento*/
     if (argc < 3)
     {
-        printf("Error, too few arguments\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
+        printf("Error, muy pocos argumentos\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
         return -1;
     }
 
     /* comprobamos que el -s es correcto */
     if (strcmp(argv[1], "-s") != 0)
     {
-        printf("Error with the arguments\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
+        printf("Error con los argumentos\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
         return -1;
     }
     if ((temp = fopen(argv[2], "r")) == NULL)
     {
-        printf("Error with the argument -s \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[2], argv[0]);
+        printf("Error con el argumento -s \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[2], argv[0]);
         return -1;
     }
-    
+
     fclose(temp);
     memset(nameS, 0, MAX_NAME_FILE);
     strcpy(nameS, argv[2]);
@@ -51,7 +51,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
 
             if ((temp = fopen(argv[4], "r")) == NULL)
             {
-                printf("Error with the argument -c \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[4], argv[0]);
+                printf("Error con el argumento -c \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[4], argv[0]);
                 return -1;
             }
             fclose(temp);
@@ -62,7 +62,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
         { /* si existe comprobamos que el -t es correcto*/
             if (atof(argv[4]) <= 0)
             { /* no puedes tener un tiempo de 0 o negativo*/
-                printf("Error with the argument -t \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[4], argv[0]);
+                printf("Error con el argumento -t \"%s\"\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[4], argv[0]);
                 return -1;
             }
 
@@ -70,14 +70,14 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
 
             if ((temp = fopen(nameC, "r")) == NULL)
             {
-                printf("Error with the file \"%s\" maybe it doesn't exists \n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", nameC, argv[0]);
+                printf("Error con el archivo \"%s\" tal vez no existe \n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", nameC, argv[0]);
                 return -1;
             }
             fclose(temp);
         }
         else
         {
-            printf("Error with the arguments\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
+            printf("Error con los argumentos\n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
             return -1;
         }
     }
@@ -85,7 +85,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
     {
         if ((strcmp(argv[3], "-c") != 0) || ((temp = fopen(argv[4], "r")) == NULL))
         {
-            printf("Error with the argument -c \n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
+            printf("Error con el argumento -c \n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
             return -1;
         }
         fclose(temp);
@@ -95,7 +95,7 @@ int comprobarEntrada(int argc, char *argv[], char *nameC, char *nameS, double *t
 
         if ((strcmp(argv[5], "-t") != 0) || (atof(argv[6]) <= 0))
         { /* no puedes tener un tiempo de 0 o negativo*/
-            printf("Error with the argument -t \n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
+            printf("Error con el argumento -t \n Use: %s -s <file name> [-c <file name>] [-t <num>]\n", argv[0]);
             return -1;
         }
 
@@ -142,7 +142,7 @@ time_t strToTime(char *str)
     time_t s;
     time(&s);
     struct tm *d;
-    d = localtime(&s); 
+    d = localtime(&s);
     d->tm_hour = horas;
     d->tm_min = minutos;
     d->tm_sec = 0;
@@ -168,14 +168,15 @@ int get_number_routes(FILE *fp)
         {
             n++;
             c = getc(fp);
-            if (c == '\n' || c == EOF) {
+            if (c == '\n' || c == EOF)
+            {
                 hay_linea_vacia = 1;
                 break;
             }
         }
         c = getc(fp);
     }
-    
+
     if (hay_linea_vacia == 1)
         n--;
 
@@ -220,7 +221,7 @@ void build_loads(int n, FILE *fp, t_carga *arr[])
 
         /* agregamos la cantidad total de pasajeros de la ruta */
         new_load->pasajeros += (g[0] + g[1] + g[2] + g[3] + g[4] + g[5] + g[6] + g[7]);
-        
+
         /* Agregamos esta nueva carga al arreglo */
         arr[i] = new_load;
 
@@ -322,7 +323,8 @@ t_carga **leerCarga(char *carga, int *numeroRutas)
 
     /* Creamos un arreglo para las cargas */
     t_carga **loads = malloc(sizeof(t_carga *) * n);
-    if (loads == NULL) {
+    if (loads == NULL)
+    {
         printf("No hay suficiente memoria disponible\n");
         exit(1);
     }
@@ -371,7 +373,8 @@ itinerario **leerServicio(char *servicio, int *numeroRutas)
     /* Creamos un arreglo para guardar los servicios de cada parada */
     itinerario **routes_service = malloc(sizeof(itinerario *) * n);
 
-    if (routes_service == NULL) {
+    if (routes_service == NULL)
+    {
         printf("No hay suficiente memoria disponible\n");
         exit(1);
     }
@@ -508,9 +511,9 @@ int numeroDePersonasEnEspera(t_carga *infoCarga, time_t hora)
 
 /*
     Codifica el mensaje que se va a enviar a traves del pipe a un formato:
-    "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde 
+    "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde
     nP es el número de personas esperando en una parada,
-    signo_i puede ser < o > dependiendo de la dirección del autobús y 
+    signo_i puede ser < o > dependiendo de la dirección del autobús y
     avance_i es el porcentaje de avance (del 0% al 100%).
     Argumento:
         arrAvances: un apuntador a un arreglo de struct avance
@@ -529,11 +532,11 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
     sprintf(buffer, "%d", nroPersonasEnEspera);
     strcat(resultado, buffer);
     int i = 0;
-    int hayProgreso =0;
+    int hayProgreso = 0;
 
     for (; i < serviciosArrancados; i++)
     {
-        if(arrAvances[i].ida == -2)
+        if (arrAvances[i].ida == -2)
             continue;
 
         if (arrAvances[i].ida != 2)
@@ -556,40 +559,44 @@ char *codficarInformacion(struct avance *arrAvances, char *nombreRuta, int nroPe
             {
                 strcat(resultado, ">10");
             }
-        } else {
+        }
+        else
+        {
             hayProgreso = 1;
             strcat(resultado, ",<10");
             arrAvances[i].ida = -2;
-
         }
     }
-    
+
     strcat(resultado, "\n");
-    if(hayProgreso == 0)
+    if (hayProgreso == 0)
         return "ta vacio we\n";
     return resultado;
 }
 
 /*
     Función que decodifica e imprime dado un mensaje de actualización de estado codificado dado el formato:
-    "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde 
+    "I,nP,signo_1.avance_1,...,signo_n.avance_n\n" donde
     nP es el número de personas esperando en una parada,
-    signo_i puede ser < o > dependiendo de la dirección del autobús y 
+    signo_i puede ser < o > dependiendo de la dirección del autobús y
     avance_i es el porcentaje de avance (del 0% al 100%).
     Argumentos:
         codParada: arreglo de caracteres que contiene el código de la parada.
         msg: arreglo de caracteres que contiene el mensaje de actualización de estado codificado.
 */
-void imprimirMsg(char codParada[], char msg[]) {
+void imprimirMsg(char codParada[], char msg[])
+{
     int j = 2;
     int msgValido = 0;
 
     /* se asegura que el mensaje es válido */
-    while (msg[j] != '\0') {
-        if (msg[j++] == ',') {
+    while (msg[j] != '\0')
+    {
+        if (msg[j++] == ',')
+        {
             msgValido = 1;
             break;
-        }    
+        }
     }
 
     int i = 2;
@@ -617,7 +624,7 @@ void imprimirMsg(char codParada[], char msg[]) {
             cont *= 10;
             cont += msg[i++] - '0';
         }
-        
+
         /* impresión del porcentaje */
         printf(" [");
         for (j = 0; j < cont; j++)
@@ -629,11 +636,12 @@ void imprimirMsg(char codParada[], char msg[]) {
         {
             printf(" ");
         }
-        
+
         printf("]");
-        
+
         /* se determina si ya terminó el mensaje */
-        if (msg[i++] == '\n') break;
+        if (msg[i++] == '\n')
+            break;
     }
     printf("\n");
 }
