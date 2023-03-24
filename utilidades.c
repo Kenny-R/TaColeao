@@ -135,7 +135,7 @@ time_t strToTime(char *str)
     sscanf(str, "%d:%d", &horas, &minutos);
     if (verificarTiempo(horas, minutos) == 0)
     {
-        printf("Error with the time\n");
+        printf("Error con el tiempo\n");
         return;
     }
 
@@ -314,7 +314,7 @@ t_carga **leerCarga(char *carga, int *numeroRutas)
     /* Verifiquemos si se pudo abrir correctamente el archivo */
     if (load_file == NULL)
     {
-        printf("The file could not be open\n");
+        printf("El archivo no se pudo abrir\n");
         return NULL;
     }
     n = get_number_routes(load_file);
@@ -362,7 +362,7 @@ itinerario **leerServicio(char *servicio, int *numeroRutas)
     /* Verifiquemos si se pudo abrir correctamente el archivo */
     if (service_file == NULL)
     {
-        printf("The file could not be open\n");
+        printf("El archivo no se pudo abrir\n");
         return NULL;
     }
 
