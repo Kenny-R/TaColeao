@@ -9,6 +9,10 @@
 */
 nodo * crearListaEnlazada(){
     nodo * head = malloc(sizeof(nodo));
+    if (head == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
 
     head -> anterior = head;
     head -> siguiente = head;
@@ -27,6 +31,11 @@ nodo * crearListaEnlazada(){
 void anadirNodoAlFinal(void * contenido, nodo * listaEnlazada) {
 
     nodo * nuevoNodo = malloc(sizeof(nodo));
+    if (nuevoNodo == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     /*seteamos el nuevo nodo*/
     nuevoNodo -> siguiente = listaEnlazada;
     nuevoNodo -> anterior = listaEnlazada -> anterior;
@@ -48,6 +57,11 @@ void anadirNodoAlFinal(void * contenido, nodo * listaEnlazada) {
 void anadirNodoAlInicio(void * contenido, nodo * listaEnlazada) {
 
     nodo * nuevoNodo = malloc(sizeof(nodo));
+    if (nuevoNodo == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     /*seteamos el nuevo nodo*/
     nuevoNodo -> siguiente = listaEnlazada->siguiente;
     nuevoNodo -> anterior = listaEnlazada;

@@ -13,7 +13,17 @@
 */
 itinerario *crearItinerario(char *cod){
     itinerario *nuevoItinerario = malloc(sizeof(itinerario));
+    if (nuevoItinerario == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     nuevoItinerario->cod = malloc(MAX_CODE_LENGTH);
+    if (nuevoItinerario->cod == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     strncpy(nuevoItinerario->cod,cod,MAX_CODE_LENGTH);
     nuevoItinerario->numero_servicios = 0;
     nuevoItinerario ->servicios = crearListaEnlazada();
@@ -42,6 +52,10 @@ void eliminarItinerario(itinerario *itinerario_a_eliminar) {
 */
 servicio_autobus *crearServicio(char *hora, int capacidad) {
     servicio_autobus *nuevoServicio = malloc(sizeof(servicio_autobus));
+    if (nuevoServicio == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
     nuevoServicio -> capacidad = capacidad;
     nuevoServicio -> hora =  strToTime(hora);
 

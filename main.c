@@ -371,6 +371,14 @@ int main(int argc, char *argv[])
         }
     }
     printf("Termino la simulacion.\n");
+    
+    for (i = 0; i<nroRutasRouteServices; i++) {
+        eliminarItinerario(route_services[i]);
+    }
+
+    for (i=0; i<nroRutasLoads;i++) {
+        eliminarCargar(loads[i]);
+    }
 
     return EXIT_SUCCESS;
 }

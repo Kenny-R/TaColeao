@@ -18,10 +18,24 @@
 t_carga *crearCarga(char *cod, char *name, char *tiempoRecorr){
     t_carga *nuevaCarga = malloc(sizeof(t_carga));
     
+    if (nuevaCarga == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     nuevaCarga -> cod = malloc(MAX_CODE_LENGTH);
+    if (nuevaCarga->cod == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
     strcpy(nuevaCarga->cod,cod);
     
     nuevaCarga -> name = malloc(MAX_LOAD_NAME_LENGTH);
+    if (nuevaCarga->name == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     strcpy(nuevaCarga->name,name);
 
     nuevaCarga -> recorr = strToTime(tiempoRecorr);
@@ -41,6 +55,11 @@ t_carga *crearCarga(char *cod, char *name, char *tiempoRecorr){
 */
 t_grupo *crearGrupo(char *hora, int cantidad) {
     t_grupo *nuevoGrupo = malloc(sizeof(t_grupo));
+    if (nuevoGrupo == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     nuevoGrupo->cantidad = cantidad;
     nuevoGrupo -> hora = strToTime(hora);
 
@@ -56,6 +75,10 @@ t_grupo *crearGrupo(char *hora, int cantidad) {
 */
 void agregarGrupo(char *hora, int cantidad,t_carga *carga) {
     t_grupo *nuevoGrupo = malloc(sizeof(t_grupo));
+    if (nuevoGrupo == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
     nuevoGrupo -> hora = strToTime(hora);
     nuevoGrupo -> cantidad = cantidad;
 

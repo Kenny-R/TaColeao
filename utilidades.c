@@ -322,6 +322,10 @@ t_carga **leerCarga(char *carga, int *numeroRutas)
 
     /* Creamos un arreglo para las cargas */
     t_carga **loads = malloc(sizeof(t_carga *) * n);
+    if (loads == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
 
     /* Volvemos a leer desde el comienzo del archivo */
     rewind(load_file);
@@ -366,6 +370,12 @@ itinerario **leerServicio(char *servicio, int *numeroRutas)
     rewind(service_file);
     /* Creamos un arreglo para guardar los servicios de cada parada */
     itinerario **routes_service = malloc(sizeof(itinerario *) * n);
+
+    if (routes_service == NULL) {
+        printf("No hay suficiente memoria disponible\n");
+        exit(1);
+    }
+
     build_services(n, service_file, routes_service);
 
     /* Cerramos el archivo */
